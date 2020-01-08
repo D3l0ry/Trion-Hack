@@ -29,7 +29,7 @@ namespace Trion.SDK.Surface.Controls
             Interface.Surface.SetDrawFilledRect(Position.X + 5, Position.Y + 5, Position.X + (Size.Width / 2), Position.Y + Size.Height - 5);
 
             Interface.Surface.SetTextColor(ForeColor);
-            Interface.Surface.SetTextPosition();
+            //Interface.Surface.SetTextPosition();
         }
     }
 }

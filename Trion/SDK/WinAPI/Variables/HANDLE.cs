@@ -31,16 +31,14 @@ namespace Trion.SDK.WinAPI.Variables
 
         public static implicit operator HANDLE(IntPtr Value) => new HANDLE(Value);
 
-        public static implicit operator HANDLE(uint Value) => new HANDLE(Value);
+        public static explicit operator HANDLE(uint* Value) => new HANDLE(Value);
 
-        public static implicit operator HANDLE(uint* Value) => new HANDLE(Value);
+        public static explicit operator HANDLE(uint Value) => new HANDLE(Value);
 
 
         public static implicit operator void*(HANDLE Value) => Value.Value;
 
         public static implicit operator IntPtr(HANDLE Value) => (IntPtr)Value.Value;
-
-        public static implicit operator uint*(HANDLE Value) => (uint*)(uint)Value.Value;
 
         public static explicit operator uint(HANDLE Value) => (uint)Value.Value;
 

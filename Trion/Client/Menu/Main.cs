@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using System.Threading;
 
 using Trion.SDK.Surface;
 using Trion.SDK.Surface.Controls;
@@ -13,26 +12,9 @@ namespace Trion.Client.Menu
         public Main()
         {
             Initialization();
-
-            OldButton = ProfileNavigate;
         }
 
-        private void Main_KeyHold(Control ClassEvent)
-        {
-            Visible = !Visible;
-
-            Thread.Sleep(150);
-        }
-
-        private void VisualNavigate_MouseLeftClick(Control ClassEvent) => NavigateActive(ClassEvent);
-
-        private void SkinChangerNavigate_MouseLeftClick(Control ClassEvent) => NavigateActive(ClassEvent);
-
-        private void ProfileNavigate_MouseLeftClick(Control ClassEvent) => NavigateActive(ClassEvent);
-
-        private void AimBotNavigate_MouseLeftClick(Control ClassEvent) => NavigateActive(ClassEvent);
-
-        private void MiscNavigate_MouseLeftClick(Control ClassEvent) => NavigateActive(ClassEvent);
+        private void Main_KeyDown(Control ClassEvent) => Visible = !Visible;
 
         private void NavigateActive(Control Navigate /*Panel NavigationPanel*/)
         {

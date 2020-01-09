@@ -1,9 +1,11 @@
-﻿using Trion.SDK.Interfaces;
+﻿using System;
+using Trion.SDK.Interfaces;
 
 namespace Trion.SDK.Surface.Drawing
 {
     internal class Font
     {
+        [Flags]
         public enum FontFlags
         {
             FONTFLAG_NONE,
@@ -26,15 +28,7 @@ namespace Trion.SDK.Surface.Drawing
         public uint Size { get; set; }
         public FontFlags Style { get; set; }
 
-        public Font()
-        {
-            Name = "Tahoma";
-            Size = 29;
-            Style = FontFlags.FONTFLAG_NONE;
-
-            Id = Interface.Surface.CreateFont();
-            Interface.Surface.SetFontGlyphSet(Id, Name, (int)Size, 0, 0, 0, Style);
-        }
+        public Font():this("Tahoma",29, FontFlags.FONTFLAG_NONE) { }
 
         public Font(string Name, uint Size, FontFlags Style)
         {

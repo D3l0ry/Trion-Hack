@@ -12,24 +12,36 @@ namespace Trion.SDK.Surface.Controls
 
         public override void Show()
         {
-            Interface.Surface.SetDrawColor(BackColor);
-            Interface.Surface.SetDrawFilledRect(Position.X, Position.Y, Position.X + Size.Width, Position.Y + Size.Height);
+            #region Variables
+            int RectX2 = Position.X + Size.Width;
+            int RectY2 = Position.Y + Size.Height;
 
-            Interface.Surface.SetDrawColor(Color.White);
-            Interface.Surface.SetDrawOutlinedRect(Position.X, Position.Y, Position.X + Size.Width, Position.Y + Size.Height);
+            int CheckX1 = Position.X + 1;
+            int CheckY1 = Position.Y + 1;
+            int CheckX2 = Position.X + (Size.Width / 2);
+            int CheckY2 = Position.Y + Size.Height - 1;
 
-            if(Checked)
+            Color ActiveColor = Color.Red;
+            #endregion
+
+            if (Checked)
             {
-                Interface.Surface.SetDrawColor(Color.Green);
-                Interface.Surface.SetDrawFilledRect(Position.X + (Size.Width/2), Position.Y + 5, Position.X + Size.Width - 5, Position.Y + Size.Height - 5);
-                return;
+                CheckX1 = Position.X + (Size.Width / 2);
+                CheckX2 = Position.X + Size.Width - 1;
+
+                ActiveColor = Color.Green;
             }
 
-            Interface.Surface.SetDrawColor(Color.Red);
-            Interface.Surface.SetDrawFilledRect(Position.X + 5, Position.Y + 5, Position.X + (Size.Width / 2), Position.Y + Size.Height - 5);
+            Interface.Surface.SetDrawColor(Color.White);
+            Interface.Surface.SetDrawOutlinedRect(Position.X - 1, Position.Y - 1, RectX2 + 1,RectY2 + 1);
 
-            Interface.Surface.SetTextColor(ForeColor);
-            //Interface.Surface.SetTextPosition();
+            Interface.Surface.SetDrawColor(BackColor);
+            Interface.Surface.SetDrawFilledRect(Position.X, Position.Y, RectX2, RectY2);
+
+            Interface.Surface.SetDrawColor(ActiveColor);
+            Interface.Surface.SetDrawFilledRect(CheckX1, CheckY1, CheckX2, CheckY2);
+
+            MouseEvent();
         }
     }
 }

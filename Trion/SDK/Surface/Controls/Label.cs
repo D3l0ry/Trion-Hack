@@ -13,7 +13,6 @@ namespace Trion.SDK.Surface.Controls
             Size.Height = Height;
 
             Interface.Surface.SetTextFont(Font.Id);
-
             Interface.Surface.SetTextColor(ForeColor);
             Interface.Surface.SetTextPosition(Position.X, Position.Y);
 

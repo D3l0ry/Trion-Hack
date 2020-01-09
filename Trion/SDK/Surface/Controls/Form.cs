@@ -93,15 +93,13 @@ namespace Trion.SDK.Surface.Controls
             if (Visible)
             {
                 Interface.Surface.SetDrawColor(BackColor);
-
                 Interface.Surface.SetDrawFilledRect(Position.X, Position.Y, Position.X + Size.Width, Position.Y + Size.Height);
 
                 if (!string.IsNullOrWhiteSpace(Text))
                 {
-                    Interface.Surface.SetTextColor(Color.White);
-                    Interface.Surface.SetTextFont(Font.Size);
-                    Interface.Surface.GetTextSize(Font.Size, Text, out int TextWidth, out int TextHeight);
-                    Interface.Surface.SetTextPosition(Position.X + (Size.Width / 2) - (TextWidth / 2), Position.Y + (Size.Height / 2) - (TextHeight / 2));
+                    Interface.Surface.SetTextColor(ForeColor);
+                    Interface.Surface.SetTextFont(Font.Id);
+                    Interface.Surface.SetTextPosition(Position.X + 25, Position.Y + 10);
                     Interface.Surface.PrintText(Text);
                 }
 

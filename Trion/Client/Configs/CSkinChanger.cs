@@ -5,27 +5,34 @@ using static Trion.SDK.Interfaces.Client.Entity.Structures.BaseCombatWeapon;
 namespace Trion.Client.Configs
 {
     [Serializable]
-    internal class CSkinChanger
+    internal struct CSkinChanger
     {
-        public bool SkinChangerActive = true;
+        public bool SkinChangerActive;
     }
 
     [Serializable]
-    internal class CSkinChangerWeapon
+    internal struct CSkinChangerWeapon
     {
         public WeaponId WeaponID;
 
-        public int SkinID = 12;
+        public int SkinID;
         public float SkinWear;
         public bool StatTrackEnable;
-        public uint StatTrack = 0;
+        public int StatTrack;
 
         public string WeaponName;
 
-        public QualityId QualityID = QualityId.Normal;
+        public QualityId QualityID;
 
-        public CSkinChangerWeapon() : this(WeaponId.None) { }
-
-        public CSkinChangerWeapon(WeaponId WeaponID) => this.WeaponID = WeaponID;
+        public CSkinChangerWeapon(WeaponId weaponID, int skinID = 0, float skinWear = 0, bool statTrackEnable = false, int statTrack = 0, string weaponName = null, QualityId qualityID = QualityId.Normal)
+        {
+            WeaponID = weaponID;
+            SkinID = skinID;
+            SkinWear = skinWear;
+            StatTrackEnable = statTrackEnable;
+            StatTrack = statTrack;
+            WeaponName = weaponName;
+            QualityID = qualityID;
+        }
     }
 }

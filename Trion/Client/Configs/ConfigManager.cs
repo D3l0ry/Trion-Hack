@@ -11,51 +11,57 @@ namespace Trion.Client.Configs
 
         private static string ConfigPath(object ObjectSave) => Path.Combine($@"C:\Config", $@"{ObjectSave.GetType().Name}.xml");
 
-        public static CVisual CVisual = new CVisual();
-        public static CSkinChanger CSkinChanger = new CSkinChanger();
+        public static CVisual CVisual = new CVisual()
+        {
+            Alpha = 1f
+        };
+        public static CMisc CMisc = new CMisc();
+        public static CSkinChanger CSkinChanger = new CSkinChanger() {  SkinChangerActive = true};
         public static CSkinChangerWeapon[] CSkinChangerWeapons =
         {
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.None),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.None,12),
 
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Glock) { SkinID = 918},
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Glock,918),
             new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Hkp2000),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Usp_s) { SkinID = 705},
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Elite),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.P250),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Tec9){ SkinID = 644},
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Fiveseven){ SkinID = 660},
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Cz75a),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Deagle)  { SkinID = 645},
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Revolver),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Usp_s,705),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Elite,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.P250,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Tec9,644),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Fiveseven,660),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Cz75a,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Deagle,645),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Revolver,12),
 
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Nova),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Xm1014),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Sawedoff),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Mag7),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.M249),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Negev),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Nova,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Xm1014,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Sawedoff,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Mag7,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.M249,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Negev,12),
 
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Mac10){ SkinID = 38},
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Mp9),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Mp7),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Mp5sd){ SkinID = 810},
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Ump45){ SkinID = 802},
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.P90),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Bizon),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Mac10,38),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Mp9,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Mp7,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Mp5sd,810),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Ump45,802),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.P90,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Bizon,12),
 
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.GalilAr),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Famas){ SkinID = 919},
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Ak47) {  SkinID =474, StatTrackEnable = true},
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.M4A1) { SkinID = 309},
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.M4a1_s),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Ssg08){ SkinID = 899},
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Sg553),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Aug),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Awp) { SkinID = 344},
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.G3SG1),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Scar20),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.GalilAr,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Famas,919),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Ak47,474,0,true,1),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.M4A1,309),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.M4a1_s,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Ssg08,899),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Sg553,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Aug,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Awp,344),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.G3SG1,12),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Scar20,12),
 
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.M9Bayonet) {  SkinID = 522},
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Talon,522,0,false,0,null),
+
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.GloveMotorcycle,10028,0,false,0,null),
         };
 
         public static void SaveConfig()

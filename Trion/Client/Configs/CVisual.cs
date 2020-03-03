@@ -16,34 +16,18 @@ namespace Trion.Client.Configs
         public float Blue;
         public float Alpha;
 
-        public bool FullBloom;
+        public bool GlowFullBloom;
 
         public int GlowStyle;
         #endregion
 
         #region Misc
+        public bool Prime = true;
         public bool Radar;
-        public bool BunnyHop = true;
-        public bool AutoStrafe = true;
-        public bool RevealRanks;
         public bool NoFlash;
-        public bool MoonWalk;
-        public float ViewModelFov;
-        public bool WaterMark = true;
-        #endregion
-
-        #region Initializations
-        public CVisual()
-        {
-            Red = 255 / 255f;
-            Green = 0 / 255f;
-            Blue = 0 / 255f;
-            Alpha = 255 / 255f;
-        }
-        #endregion
-
-        #region Operators
-        public static implicit operator IGlowObjectManager.GlowColor(CVisual Value) => new IGlowObjectManager.GlowColor(Value.Red, Value.Green, Value.Blue, Value.Alpha);
+        public bool WaterMark;
+        public bool RevealRanks;
+        public float ViewModelFov = 25;
         #endregion
     }
 }

@@ -7,55 +7,80 @@ namespace Trion.Client.Site
     internal static class Api
     {
         #region Variables
-        private static TrionObjectSerializer TrionObjectSerializer = new TrionObjectSerializer();
+        private static readonly TrionObjectSerializer TrionObjectSerializer = new TrionObjectSerializer();
+        private static readonly Request TrionRequest = new Request("http://api.trion.tk/");
         #endregion
 
-        public static User Authorization() =>  TrionObjectSerializer.Deserialize<User>(new Request("http://api.trion.tk/")
+        public static User Authorization()
         {
-            ["method"] = "auth",
-            ["login"] = "DanilPidor@ya.ru",
-            ["password"] = "DanilPidor",
-            ["hwid"] = "1"
-        });
+            TrionRequest.ClearParams();
 
-        public static User Authorization(this User User) => TrionObjectSerializer.Deserialize<User>(new Request("http://api.trion.tk/")
-        {
-            ["method"] = "auth",
-            ["login"] = "DanilPidor@ya.ru",
-            ["password"] = "DanilPidor",
-            ["hwid"] = "1"
-        });
+            TrionRequest["method"] = "auth";
+            TrionRequest["login"] = "DanilPidor@ya.ru";
+            TrionRequest["password"] = "DanilPidor";
+            TrionRequest["hwid"] = "1";
 
-        public static Profile GetProfile() => TrionObjectSerializer.Deserialize<Profile>(new Request("http://api.trion.tk/")
-        {
-            ["method"] = "getUser",
-            ["login"] = "DanilPidor@ya.ru",
-            ["password"] = "DanilPidor",
-            ["hwid"] = "1"
-        });
+            return TrionObjectSerializer.Deserialize<User>(TrionRequest);
+        }
 
-        public static Profile GetProfile(this User User) => TrionObjectSerializer.Deserialize<Profile>(new Request("http://api.trion.tk/")
+        public static User Authorization(this User user)
         {
-            ["method"] = "getUser",
-            ["login"] = "DanilPidor@ya.ru",
-            ["password"] = "DanilPidor",
-            ["hwid"] = "1"
-        });
+            TrionRequest.ClearParams();
 
-        public static Hwid SetHwid() => TrionObjectSerializer.Deserialize<Hwid>(new Request("http://api.trion.tk/")
-        {
-            ["method"] = "sethwid",
-            ["login"] = "DanilPidor@ya.ru",
-            ["password"] = "DanilPidor",
-            ["hwid"] = "1"
-        });
+            TrionRequest["method"] = "auth";
+            TrionRequest["login"] = "DanilPidor@ya.ru";
+            TrionRequest["password"] = "DanilPidor";
+            TrionRequest["hwid"] = "1";
 
-        public static Hwid SetHwid(this Hwid Hwid) => TrionObjectSerializer.Deserialize<Hwid>(new Request("http://api.trion.tk/")
+            return TrionObjectSerializer.Deserialize<User>(TrionRequest);
+        }
+
+        public static Profile GetProfile()
         {
-            ["method"] = "sethwid",
-            ["login"] = "DanilPidor@ya.ru",
-            ["password"] = "DanilPidor",
-            ["hwid"] = "1"
-        });
+            TrionRequest.ClearParams();
+
+            TrionRequest["method"] = "getUser";
+            TrionRequest["login"] = "DanilPidor@ya.ru";
+            TrionRequest["password"] = "DanilPidor";
+            TrionRequest["hwid"] = "1";
+
+            return TrionObjectSerializer.Deserialize<Profile>(TrionRequest);
+        }
+
+        public static Profile GetProfile(this Profile user)
+        {
+            TrionRequest.ClearParams();
+
+            TrionRequest["method"] = "getUser";
+            TrionRequest["login"] = "DanilPidor@ya.ru";
+            TrionRequest["password"] = "DanilPidor";
+            TrionRequest["hwid"] = "1";
+
+            return TrionObjectSerializer.Deserialize<Profile>(TrionRequest);
+        }
+
+        public static Hwid SetHwid()
+        {
+            TrionRequest.ClearParams();
+
+            TrionRequest["method"] = "sethwid";
+            TrionRequest["login"] = "DanilPidor@ya.ru";
+            TrionRequest["password"] = "DanilPidor";
+            TrionRequest["hwid"] = "1";
+
+            return TrionObjectSerializer.Deserialize<Hwid>(TrionRequest);
+        }
+
+        public static Hwid SetHwid(this Hwid hwid)
+        {
+            TrionRequest.ClearParams();
+
+            TrionRequest["method"] = "sethwid";
+            TrionRequest["login"] = "DanilPidor@ya.ru";
+            TrionRequest["password"] = "DanilPidor";
+            TrionRequest["hwid"] = "1";
+
+            return TrionObjectSerializer.Deserialize<Hwid>(TrionRequest);
+        }
     }
 }

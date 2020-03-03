@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -9,10 +10,10 @@ using Trion.SDK.Web.Headers;
 
 namespace Trion.SDK.Web
 {
-    internal sealed class Request
+    internal sealed class Request:IDisposable
     {
         #region Params
-        private readonly string Address = string.Empty;
+        public string Address { get; set; }
         private readonly RequestMethod RequestMethod;
 
         private WebResponse HttpWebResponse;
@@ -22,10 +23,6 @@ namespace Trion.SDK.Web
         #endregion
 
         #region Initialization
-        public Request()
-        {
-        }
-
         public Request(string Address, RequestMethod RequestMethod = RequestMethod.GET, RequestHeader RequestHeader = null)
         {
             this.Address = Address;
@@ -67,7 +64,69 @@ namespace Trion.SDK.Web
         #endregion
 
         #region Methods
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Не ликвидировать объекты несколько раз")]
+        private HttpWebRequest GetWebRequest
+        {
+            get
+            {
+                HttpWebRequest HttpWebRequest;
+
+                HttpWebRequest = RequestMethod == RequestMethod.GET ? (HttpWebRequest)WebRequest.Create(Address + Encoding.UTF8.GetString(GetParam())) : (HttpWebRequest)WebRequest.Create(Address);
+                HttpWebRequest.Method = RequestMethod == RequestMethod.GET ? "GET" : "POST";
+
+                if (RequestHeader != null)
+                {
+                    foreach (var Headers in RequestHeader?.RequestValue)
+                    {
+                        HttpWebRequest.Headers.Add(Headers.Key, Headers.Value);
+                    }
+                }
+
+                HttpWebRequest.ContentType = ContentType ?? "application/x-www-form-urlencoded";
+                HttpWebRequest.Accept = Accept ?? "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";
+                HttpWebRequest.UserAgent = UserAgent ?? "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 YaBrowser/19.3.1.887 Yowser/2.5 Safari/537.36";
+
+                return HttpWebRequest;
+            }
+        }
+
+        private HttpWebResponse Response()
+        {
+            HttpWebRequest HttpWebRequest = GetWebRequest;
+
+            if (RequestMethod == RequestMethod.POST)
+            {
+                byte[] Buffer = GetParam();
+
+                HttpWebRequest.ContentLength = Buffer.Length;
+
+                using (Stream StreamRequest = HttpWebRequest.GetRequestStream())
+                {
+                    StreamRequest.Write(Buffer, 0, Buffer.Length);
+                }
+            }
+
+            return (HttpWebResponse)HttpWebRequest.GetResponse();
+        }
+
+        public async Task<WebResponse> ResponseAsync()
+        {
+            HttpWebRequest HttpWebRequest = GetWebRequest;
+
+            if (RequestMethod == RequestMethod.POST)
+            {
+                byte[] Buffer = GetParam();
+
+                HttpWebRequest.ContentLength = Buffer.Length;
+
+                using (Stream StreamRequest = await HttpWebRequest.GetRequestStreamAsync())
+                {
+                    StreamRequest.Write(Buffer, 0, Buffer.Length);
+                }
+            }
+
+            return await HttpWebRequest.GetResponseAsync();
+        }
+
         private string GetResponse()
         {
             StringBuilder ReadResponse = new StringBuilder(15);
@@ -95,69 +154,6 @@ namespace Trion.SDK.Web
 
             return ReadResponse.ToString();
         }
-
-        private HttpWebRequest WebRequest
-        {
-            get
-            {
-                HttpWebRequest HttpWebRequest;
-
-                HttpWebRequest = RequestMethod == RequestMethod.GET ? (HttpWebRequest)System.Net.WebRequest.Create(Address + Encoding.UTF8.GetString(GetParam())) : (HttpWebRequest)System.Net.WebRequest.Create(Address);
-                HttpWebRequest.Method = RequestMethod == RequestMethod.GET ? "GET" : "POST";
-
-                if (RequestHeader != null)
-                {
-                    foreach (var Headers in RequestHeader?.RequestValue)
-                    {
-                        HttpWebRequest.Headers.Add(Headers.Key, Headers.Value);
-                    }
-                }
-
-                HttpWebRequest.ContentType = ContentType ?? "application/x-www-form-urlencoded";
-                HttpWebRequest.Accept = Accept ?? "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";
-                HttpWebRequest.UserAgent = UserAgent ?? "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 YaBrowser/19.3.1.887 Yowser/2.5 Safari/537.36";
-
-                return HttpWebRequest;
-            }
-        }
-
-        public HttpWebResponse Response()
-        {
-            HttpWebRequest HttpWebRequest = WebRequest;
-
-            if (RequestMethod == RequestMethod.POST)
-            {
-                HttpWebRequest.ContentLength = GetParam().Length;
-
-                using (Stream StreamRequest = HttpWebRequest.GetRequestStream())
-                {
-                    StreamRequest.Write(GetParam(), 0, GetParam().Length);
-                }
-            }
-
-            ParamsValue.Clear();
-
-            return (HttpWebResponse)HttpWebRequest.GetResponse();
-        }
-
-        public async Task<WebResponse> ResponseAsync()
-        {
-            HttpWebRequest HttpWebRequest = WebRequest;
-
-            if (RequestMethod == RequestMethod.POST)
-            {
-                HttpWebRequest.ContentLength = GetParam().Length;
-
-                using (Stream StreamRequest = await HttpWebRequest.GetRequestStreamAsync())
-                {
-                    StreamRequest.Write(GetParam(), 0, GetParam().Length);
-                }
-            }
-
-            ParamsValue.Clear();
-
-            return await HttpWebRequest.GetResponseAsync();
-        }
         #endregion
 
         #region Helper Methods
@@ -165,24 +161,31 @@ namespace Trion.SDK.Web
         {
             try
             {
-                string Params = null;
+                StringBuilder Params = new StringBuilder(15);
 
                 foreach (var Param in ParamsValue)
                 {
-                    Params += Param.Key + "=" + Param.Value + "&";
+                    Params.Append(Param.Key + "=" + Param.Value + "&");
                 }
 
-                return RequestMethod == RequestMethod.GET ? Encoding.UTF8.GetBytes(Params.Insert(0, "?").TrimEnd('&')) : Encoding.UTF8.GetBytes(Params.TrimEnd('&'));
+                return RequestMethod == RequestMethod.GET ? Encoding.UTF8.GetBytes(Params.Insert(0, "?").ToString().TrimEnd('&')) : Encoding.UTF8.GetBytes(Params.ToString().TrimEnd('&'));
             }
             catch
             {
                 return new byte[1];
             }
         }
+
+        public void ClearParams() => ParamsValue.Clear();
         #endregion
 
         #region Overide
         public override string ToString() => GetResponse();
         #endregion
+
+        public void Dispose()
+        {
+            ParamsValue.Clear();
+        }
     }
 }

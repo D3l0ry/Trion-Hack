@@ -4,11 +4,11 @@ using Trion.SDK.Interfaces;
 
 namespace Trion.SDK.Surface.Controls
 {
-    internal unsafe class Label : Control
+    internal sealed class Label : Control
     {
         public override void Show()
         {
-            Interface.Surface.GetTextSize(Font.Size, Text, out int Width, out int Height);
+            Interface.Surface.GetTextSize(Font.Id, Text, out int Width, out int Height);
             Size.Width = Width;
             Size.Height = Height;
 

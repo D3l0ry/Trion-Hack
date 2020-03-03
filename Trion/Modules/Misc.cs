@@ -1,44 +1,40 @@
-﻿using Trion.Client.Configs;
-using Trion.SDK.Interfaces;
-using Trion.SDK.Interfaces.Client;
+﻿using Trion.SDK.Interfaces.Client;
 using Trion.SDK.Interfaces.Client.Entity.Structures;
 
 namespace Trion.Modules
 {
-    internal unsafe class Misc
+    internal unsafe struct Misc
     {
-        public static void BunnyHop(IClientMode.UserCmd* CMD)
+        public static void BunnyHop(ref IClientMode.UserCmd cmd, BasePlayer* localPlayer)
         {
-            var LocalPLayer = Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer;
-
-            if (LocalPLayer->GetMoveType == BasePlayer.MoveType.LADDER || LocalPLayer->GetMoveType == BasePlayer.MoveType.NOCLIP && (LocalPLayer->GetFlags & (int)BasePlayer.Flags.FL_INWATER) != 0)
+            if (localPlayer->GetMoveType == BasePlayer.MoveType.LADDER || localPlayer->GetMoveType == BasePlayer.MoveType.NOCLIP && (localPlayer->GetFlags & (int)BasePlayer.Flags.FL_INWATER) != 0)
             {
                 return;
             }
 
-            _ = ((CMD->buttons & IClientMode.Buttons.IN_JUMP) != 0 && (LocalPLayer->GetFlags & (int)BasePlayer.Flags.FL_ONGROUND) != 0) ? CMD->buttons |= IClientMode.Buttons.IN_JUMP : CMD->buttons &= ~IClientMode.Buttons.IN_JUMP;
+            _ = ((cmd.buttons & IClientMode.Buttons.IN_JUMP) != 0 && (localPlayer->GetFlags & (int)BasePlayer.Flags.FL_ONGROUND) != 0) ? cmd.buttons |= IClientMode.Buttons.IN_JUMP : cmd.buttons &= ~IClientMode.Buttons.IN_JUMP;
         }
 
-        public static void AutoStrafe(IClientMode.UserCmd* CMD)
+        public static void AutoStrafe(ref IClientMode.UserCmd cmd, BasePlayer* localPlayer)
         {
-            if (ConfigManager.CVisual.AutoStrafe && (Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer->GetFlags & 1) == 0)
+            if ((localPlayer->GetFlags & 1) == 0)
             {
-                if (CMD->mousedx < -25)
+                if (cmd.mousedx < 0)
                 {
-                    CMD->sidemove = -475.0f;
+                    cmd.sidemove = -450.0f;
                 }
-                else if (CMD->mousedx > 25)
+                else if (cmd.mousedx > 0)
                 {
-                    CMD->sidemove = 475.0f;
+                    cmd.sidemove = 450.0f;
                 }
             }
         }
 
-        public static void MoonWalk(IClientMode.UserCmd* CMD)
+        public static void MoonWalk(ref IClientMode.UserCmd cmd, BasePlayer* localPlayer)
         {
-            if (ConfigManager.CVisual.MoonWalk && Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer->GetFlags != (int)BasePlayer.MoveType.LADDER)
+            if (localPlayer->GetFlags != (int)BasePlayer.MoveType.LADDER)
             {
-                CMD->buttons ^= IClientMode.Buttons.IN_FORWARD | IClientMode.Buttons.IN_BACK | IClientMode.Buttons.IN_MOVELEFT | IClientMode.Buttons.IN_MOVERIGHT;
+                cmd.buttons ^= IClientMode.Buttons.IN_FORWARD | IClientMode.Buttons.IN_BACK | IClientMode.Buttons.IN_MOVELEFT | IClientMode.Buttons.IN_MOVERIGHT;
             }
         }
     }

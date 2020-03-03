@@ -1,5 +1,8 @@
-﻿namespace Trion.SDK.Structures.Numerics
+﻿using System.Runtime.InteropServices;
+
+namespace Trion.SDK.Structures.Numerics
 {
+    [StructLayout(LayoutKind.Sequential)]
     internal struct Vector3
     {
         public float X, Y, Z;

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Trion.Client.Site.Strucutres
+﻿namespace Trion.Client.Site.Strucutres
 {
     internal struct Hwid
     {

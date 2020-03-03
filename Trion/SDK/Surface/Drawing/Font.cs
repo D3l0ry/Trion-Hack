@@ -1,4 +1,5 @@
 ﻿using System;
+
 using Trion.SDK.Interfaces;
 
 namespace Trion.SDK.Surface.Drawing

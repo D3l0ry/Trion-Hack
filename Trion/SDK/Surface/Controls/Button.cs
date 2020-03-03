@@ -2,7 +2,7 @@
 
 namespace Trion.SDK.Surface.Controls
 {
-    class Button : Control
+    internal sealed class Button : Control
     {
         #region Public Methods
         public override void Show()

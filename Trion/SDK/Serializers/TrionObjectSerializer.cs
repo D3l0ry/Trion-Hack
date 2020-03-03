@@ -6,30 +6,30 @@ namespace Trion.SDK.Serializers
 {
     internal class TrionObjectSerializer : ISerializer
     {
-        public string Serialize(object Type)
+        public string Serialize(object type)
         {
             StringBuilder Out = new StringBuilder();
 
-            foreach (var Obj in Type.GetType().GetProperties())
+            foreach (var Obj in type.GetType().GetProperties())
             {
-                Out.Append($"{Obj.Name}={Obj.GetValue(Type, null)}\n");
+                Out.Append($"{Obj.Name}={Obj.GetValue(type, null)}\n");
             }
 
             return Out.ToString();
         }
 
-        public object Deserialize(string Input, object Type)
+        public object Deserialize(string input, object type)
         {
-            foreach (var Arg in Input.Split('\n'))
+            foreach (var Arg in input.Split('\n'))
             {
                 var Args = Arg.Split('=');
 
-                Type.GetType().GetRuntimeProperty(Args[0])?.SetValue(Type, Convert.ChangeType(Args[1].TrimEnd(), Type.GetType().GetRuntimeProperty(Args[0]).PropertyType));
+                type.GetType().GetRuntimeProperty(Args[0])?.SetValue(type, Convert.ChangeType(Args[1].TrimEnd(), type.GetType().GetRuntimeProperty(Args[0]).PropertyType));
             }
 
-            return Type;
+            return type;
         }
 
-        public T Deserialize<T>(string Input) => (T)Deserialize(Input, (T)(default));
+        public T Deserialize<T>(string input) => (T)Deserialize(input, (T)(default));
     }
 }

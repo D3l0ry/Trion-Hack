@@ -8,7 +8,7 @@ namespace Trion.SDK.Structures.Modules
     internal static class Weapon
     {
         #region Variables
-        private static readonly Random Random = new Random();
+        public static readonly Random Random = new Random();
         #endregion
 
         #region Math
@@ -18,7 +18,7 @@ namespace Trion.SDK.Structures.Modules
 
         public static double LengthSqr(this Vector3 Player) => (Player.X * Player.X) + (Player.Y * Player.Y) + (Player.Z * Player.Z);
 
-        public static int GetRandomInt(int Min, int Max) => (Random.Next() % (Max - Min + 1) + Min);
+        public static int GetRandomInt(int Min, int Max) => Random.Next() % (Max - Min + 1) + Min;
         #endregion
 
         #region Methods Aim

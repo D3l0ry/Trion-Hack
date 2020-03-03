@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
 
-using Trion.SDK.Interfaces.Gui;
 using Trion.SDK.Surface.Drawing;
 using Trion.SDK.WinAPI;
 using Trion.SDK.WinAPI.Enums;
@@ -45,16 +44,18 @@ namespace Trion.SDK.Surface
         #endregion
 
         #region Private Methods
-        protected bool MouseInArea(int X1,int Y1, int X2, int Y2)
+        protected bool MouseInArea(int x1, int y1, int x2, int y2)
         {
             NativeMethods.GetCursorPos(out POINT Point);
 
-            return Point.X >= X1 && Point.Y >= Y1 && Point.X <= X2 && Point.Y <= Y2?true:false;
+            return Point.X >= x1 && Point.Y >= y1 && Point.X <= x2 && Point.Y <= y2 ? true : false;
         }
 
-        protected void MouseEvent()
+        protected void MouseEvent() => MouseEvent(Position.X, Position.Y, Position.X + Size.Width, Position.Y + Size.Height);
+
+        protected void MouseEvent(int x1, int y1, int x2, int y2)
         {
-            if (MouseInArea(Position.X, Position.Y, Position.X + Size.Width, Position.Y + Size.Height))
+            if (MouseInArea(x1,y1,x2,y2))
             {
                 if ((NativeMethods.GetAsyncKeyState(KeyCode.MS_Click1) & 1) != 0)
                 {
@@ -77,7 +78,7 @@ namespace Trion.SDK.Surface
             {
                 KeyDown?.Invoke(this);
             }
-            else if((NativeMethods.GetAsyncKeyState(Key) & 0x8000) != 0)
+            if ((NativeMethods.GetAsyncKeyState(Key) & 0x8000) != 0)
             {
                 KeyHold?.Invoke(this);
             }

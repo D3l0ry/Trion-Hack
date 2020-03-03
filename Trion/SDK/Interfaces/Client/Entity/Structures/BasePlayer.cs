@@ -6,20 +6,20 @@ using Trion.SDK.VMT;
 
 namespace Trion.SDK.Interfaces.Client.Entity.Structures
 {
-    internal unsafe struct BasePlayer
+    internal unsafe ref struct BasePlayer
     {
         #region Delegates
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate bool IsAliveDelegate(void* Class);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate void* GetActiveWeaponDelegate(void* Class);
+        private delegate BaseCombatWeapon* GetActiveWeaponDelegate(void* Class);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate void* GetEyePositionDelegate(void* Class);
+        private delegate Vector3* GetEyePositionDelegate(void* Class);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate void* GetObserverTargetDelegate(void* Class);
+        private delegate BasePlayer* GetObserverTargetDelegate(void* Class);
         #endregion
 
         #region Enums
@@ -87,7 +87,7 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             {
                 fixed (void* Class = &this)
                 {
-                    return (BaseCombatWeapon*)VMTable.CallVirtualFunction<GetActiveWeaponDelegate>(Class, 267)(Class);
+                    return VMTable.CallVirtualFunction<GetActiveWeaponDelegate>(Class, 267)(Class);
                 }
             }
         }
@@ -98,7 +98,7 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             {
                 fixed (void* Class = &this)
                 {
-                    return *(Vector3*)VMTable.CallVirtualFunction<GetEyePositionDelegate>(Class, 284)(Class);
+                    return *VMTable.CallVirtualFunction<GetEyePositionDelegate>(Class, 284)(Class);
                 }
             }
         }
@@ -109,7 +109,7 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             {
                 fixed (void* Class = &this)
                 {
-                    return (BasePlayer*)VMTable.CallVirtualFunction<GetObserverTargetDelegate>(Class, 294)(Class);
+                    return VMTable.CallVirtualFunction<GetObserverTargetDelegate>(Class, 294)(Class);
                 }
             }
         }
@@ -191,6 +191,31 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
                 fixed (void* Class = &this)
                 {
                     return *(Vector3*)((uint)Class + Interface.NetVar["DT_BasePlayer", "m_vecOrigin"]);
+                }
+            }
+        }
+
+        public Vector3 GetBonePosition(int Bone)
+        {
+            Vector3 BonePosition;
+
+            fixed (void* Enemies = &this)
+            {
+                BonePosition.X = *(float*)(*(int*)((uint)Enemies + (Interface.NetVar["DT_BaseAnimating", "m_nForceBone"] + 28)) + 0x30 * Bone + 0xC);
+                BonePosition.Y = *(float*)(*(int*)((uint)Enemies + (Interface.NetVar["DT_BaseAnimating", "m_nForceBone"] + 28)) + 0x30 * Bone + 0x1C);
+                BonePosition.Z = *(float*)(*(int*)((uint)Enemies + (Interface.NetVar["DT_BaseAnimating", "m_nForceBone"] + 28)) + 0x30 * Bone + 0x2C);
+            }
+
+            return BonePosition;
+        }
+
+        public int Body
+        {
+            set
+            {
+                fixed (void* Class = &this)
+                {
+                    *(int*)((uint)Class + Interface.NetVar["DT_BaseAnimating", "m_nBody"]) = value;
                 }
             }
         }
@@ -297,19 +322,6 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             }
         }
 
-        private int GlowIndex
-        {
-            get
-            {
-                fixed (void* Class = &this)
-                {
-                    return *(int*)((uint)Class + Interface.NetVar["DT_CSPlayer", "m_flFlashDuration"] + 24);
-                }
-            }
-        }
-
-        public IGlowObjectManager.GlowObjectDefinition* GlowObject => (IGlowObjectManager.GlowObjectDefinition*)(Interface.BaseClientDLL.GlowObjectManager + (GlowIndex * 0x38));
-
         public int ShotsFired
         {
             get
@@ -347,7 +359,7 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
         {
             fixed (void* Class = &this)
             {
-                return (BaseCombatWeapon*)Interface.ClientEntityList.GetClientEntityFromHandle(((uint*)((uint)Class + (Interface.NetVar["DT_BasePlayer", "m_hActiveWeapon"] - 256)))[Index]);
+                return (BaseCombatWeapon*)Interface.ClientEntityList.GetClientEntityFromHandle((void*)((int*)((uint)Class + (Interface.NetVar["DT_BasePlayer", "m_hActiveWeapon"] - 256)))[Index]);
             }
         }
 
@@ -357,7 +369,7 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             {
                 fixed (void* Class = &this)
                 {
-                    return (uint*)((uint)Class + Interface.NetVar["DT_BaseCombatWeapon", "m_hMyWearables"]);
+                    return (uint*)((uint)Class + Interface.NetVar["DT_BaseCombatCharacter", "m_hMyWearables"]);
                 }
             }
         }
@@ -368,7 +380,7 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             {
                 fixed (void* Class = &this)
                 {
-                    return (BaseViewModel*)Interface.ClientEntityList.GetClientEntityFromHandle(*(uint*)((uint)Class + Interface.NetVar["DT_BasePlayer", "m_hViewModel[0]"]));
+                    return (BaseViewModel*)Interface.ClientEntityList.GetClientEntityFromHandle((void*)*(uint*)((uint)Class + Interface.NetVar["DT_BasePlayer", "m_hViewModel[0]"]));
                 }
             }
         }

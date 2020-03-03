@@ -27,7 +27,7 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             {
                 fixed (void* Class = &this)
                 {
-                    return Interface.ClientEntityList.GetClientEntityFromHandle(*(uint*)((uint)Class + Interface.NetVar["DT_BaseViewModel", "m_hOwner"]));
+                    return Interface.ClientEntityList.GetClientEntityFromHandle(*(int**)((uint)Class + Interface.NetVar["DT_BaseViewModel", "m_hOwner"]));
                 }
             }
         }

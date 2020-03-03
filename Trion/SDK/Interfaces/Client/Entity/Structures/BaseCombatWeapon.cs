@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Trion.SDK.Interfaces.Client.Entity.Structures
 {
-    internal unsafe struct BaseCombatWeapon
+    internal unsafe ref struct BaseCombatWeapon
     {
         #region Enums
         public enum WeaponId : short
@@ -96,8 +96,6 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
         }
         #endregion
 
-
-
         public WeaponId ItemDefinitionIndex
         {
             get
@@ -111,7 +109,7 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             {
                 fixed (void* Class = &this)
                 {
-                    *(short*)((uint)Class + Interface.NetVar["DT_BaseCombatWeapon", "m_iItemDefinitionIndex"]) = (short)value;
+                    *(short*)((uint)Class + Interface.NetVar["DT_BaseAttributableItem", "m_iItemDefinitionIndex"]) = (short)value;
                 }
             }
         }
@@ -176,14 +174,14 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             {
                 fixed (void* Class = &this)
                 {
-                    return *(int*)((uint)Class + Interface.NetVar["DT_BaseAttributableItem", "m_iAccountID"]);
+                    return *(int*)((uint)Class + Interface.NetVar["DT_BaseCombatWeapon", "m_iAccountID"]);
                 }
             }
             set
             {
                 fixed (void* Class = &this)
                 {
-                    *(int*)((uint)Class + Interface.NetVar["DT_BaseAttributableItem", "m_iAccountID"]) = value;
+                    *(int*)((uint)Class + Interface.NetVar["DT_BaseCombatWeapon", "m_iAccountID"]) = value;
                 }
             }
         }
@@ -194,14 +192,14 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             {
                 fixed (void* Class = &this)
                 {
-                    return (QualityId)(*(int*)((uint)Class + Interface.NetVar["DT_BaseAttributableItem", "m_iEntityQuality"]));
+                    return (QualityId)(*(int*)((uint)Class + Interface.NetVar["DT_BaseCombatWeapon", "m_iEntityQuality"]));
                 }
             }
             set
             {
                 fixed (void* Class = &this)
                 {
-                    *(int*)((uint)Class + Interface.NetVar["DT_BaseAttributableItem", "m_iEntityQuality"]) = (int)value;
+                    *(int*)((uint)Class + Interface.NetVar["DT_BaseCombatWeapon", "m_iEntityQuality"]) = (int)value;
                 }
             }
         }
@@ -212,7 +210,7 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             {
                 fixed (void* Class = &this)
                 {
-                    *(int*)((uint)Class + Interface.NetVar["DT_BaseAttributableItem", "m_iItemIDHigh"]) = value;
+                    *(int*)((uint)Class + Interface.NetVar["DT_BaseCombatWeapon", "m_iItemIDHigh"]) = value;
                 }
             }
         }
@@ -223,14 +221,14 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             {
                 fixed (void* Class = &this)
                 {
-                    return *(int*)((uint)Class + Interface.NetVar["DT_BaseAttributableItem", "m_nFallbackPaintKit"]);
+                    return *(int*)((uint)Class + Interface.NetVar["DT_BaseCombatWeapon", "m_nFallbackPaintKit"]);
                 }
             }
             set
             {
                 fixed (void* Class = &this)
                 {
-                    *(int*)((uint)Class + Interface.NetVar["DT_BaseAttributableItem", "m_nFallbackPaintKit"]) = value;
+                    *(int*)((uint)Class + Interface.NetVar["DT_BaseCombatWeapon", "m_nFallbackPaintKit"]) = value;
                 }
             }
         }

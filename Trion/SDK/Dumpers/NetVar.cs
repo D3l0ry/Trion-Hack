@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 
 using Trion.SDK.Interfaces;
 using Trion.SDK.Interfaces.Client;
+using Trion.SDK.Interfaces.Client.Entity.Structures;
 
 namespace Trion.SDK.Dumpers
 {
@@ -90,7 +91,7 @@ namespace Trion.SDK.Dumpers
                     continue;
                 }
 
-                if (Marshal.PtrToStringAnsi((IntPtr)Table->netTableName).Equals(TableName))
+                if (Marshal.PtrToStringAnsi((IntPtr)Table->netTableName) == TableName)
                 {
                     return Table;
                 }
@@ -129,7 +130,7 @@ namespace Trion.SDK.Dumpers
                     }
                 }
 
-                if (!Marshal.PtrToStringAnsi((IntPtr)RecvProp->name).Equals(PropName))
+                if (Marshal.PtrToStringAnsi((IntPtr)RecvProp->name) != PropName)
                 {
                     continue;
                 }

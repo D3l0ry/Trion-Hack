@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 
 using Trion.SDK.Interfaces;
-using Trion.SDK.Interfaces.Gui;
 
 namespace Trion.SDK.Surface.Controls
 {
@@ -35,7 +35,7 @@ namespace Trion.SDK.Surface.Controls
             }
             set
             {
-                if(string.IsNullOrWhiteSpace(value.Name))
+                if (string.IsNullOrWhiteSpace(value.Name))
                 {
                     value.Name = Name;
                 }
@@ -47,26 +47,7 @@ namespace Trion.SDK.Surface.Controls
             }
         }
 
-        public Control this[string Name,bool IsPanel]
-        {
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value.Name))
-                {
-                    value.Name = Name;
-                }
-
-                if (!IsPanel)
-                {
-                    value.Position.X += Position.X;
-                    value.Position.Y += Position.Y;
-                }
-
-                Controls.Add(value);
-            }
-        }
-
-        public Control this[string Name,string Text]
+        public Control this[string Name, string Text]
         {
             set
             {
@@ -85,6 +66,19 @@ namespace Trion.SDK.Surface.Controls
                 Controls.Add(value);
             }
         }
+
+        public Control this[string Name, bool IsPanel]
+        {
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value.Name))
+                {
+                    value.Name = Name;
+                }
+
+                Controls.Add(value);
+            }
+        }
         #endregion
 
         #region Public Methods
@@ -97,22 +91,31 @@ namespace Trion.SDK.Surface.Controls
 
                 if (!string.IsNullOrWhiteSpace(Text))
                 {
+                    Interface.Surface.GetTextSize(Font.Id, Text, out int TextWidth, out int TextHeight);
+
+                    Interface.Surface.SetDrawColor(Color.FromArgb(25, 30, 37));
+                    Interface.Surface.SetDrawFilledRect(Position.X, Position.Y, Position.X + Size.Width, Position.Y + TextHeight + 10);
+
                     Interface.Surface.SetTextColor(ForeColor);
                     Interface.Surface.SetTextFont(Font.Id);
-                    Interface.Surface.SetTextPosition(Position.X + 25, Position.Y + 10);
+                    Interface.Surface.SetTextPosition(Position.X + (Size.Width / 2) - (TextWidth / 2), Position.Y + 5);
+
                     Interface.Surface.PrintText(Text);
                 }
 
-                foreach (Control Element in Controls)
+                if (Controls.Count > 0)
                 {
-                    if (Element.Visible)
+                    foreach (Control Element in Controls)
                     {
-                        Element.Show();
+                        if (Element.Visible)
+                        {
+                            Element.Show();
+                        }
                     }
                 }
-            }
 
-            MouseEvent();
+                MouseEvent();
+            }
 
             KeyEvent(WinAPI.Enums.KeyCode.VK_HOME);
         }

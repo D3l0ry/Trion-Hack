@@ -4,14 +4,14 @@ using Trion.SDK.VMT;
 
 namespace Trion.SDK.Interfaces.Client.Entity
 {
-    internal unsafe struct IClientNetworkable
+    internal unsafe ref struct IClientNetworkable
     {
         #region Delegates
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate void ReleaseDelegate(void* Class);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate void* GetClientClassDelegate(void* Class);
+        private delegate IBaseClientDLL.ClientClass* GetClientClassDelegate(void* Class);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate void OnPreDataChangedDelegate(void* Class, int UpdateType);
@@ -50,7 +50,7 @@ namespace Trion.SDK.Interfaces.Client.Entity
             {
                 fixed (void* Class = &this)
                 {
-                   return (IBaseClientDLL.ClientClass*)VMTable.CallVirtualFunction<GetClientClassDelegate>(Class, 2)(Class);
+                   return VMTable.CallVirtualFunction<GetClientClassDelegate>(Class, 2)(Class);
                 }
             }
         }

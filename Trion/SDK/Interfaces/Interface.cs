@@ -22,7 +22,7 @@ namespace Trion.SDK.Interfaces
 
         #region Delegates
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate void* CreateInterfaceFn(string Function, IntPtr Index);
+        private delegate void* CreateInterfaceFn([MarshalAs(UnmanagedType.LPStr)]string Function, IntPtr Index);
         #endregion
 
         #region Private Methods
@@ -46,6 +46,7 @@ namespace Trion.SDK.Interfaces
         public static IClientMode ClientMode = new IClientMode(**(void***)((*(uint**)BaseClientDLL)[10] + 0x5));
 
         public static IVEngineClient VEngineClient = new IVEngineClient(EngineAddress.GetInterface("VEngineClient014"));
+        public static IEngineTraceClient EngineTraceClient = new IEngineTraceClient(EngineAddress.GetInterface("EngineTraceClient004"));
         public static IVModelInfoClient ModelInfoClient = new IVModelInfoClient(EngineAddress.GetInterface("VModelInfoClient004"));
         public static IGameEventManager GameEventManager = new IGameEventManager(EngineAddress.GetInterface("GAMEEVENTSMANAGER002"));
 

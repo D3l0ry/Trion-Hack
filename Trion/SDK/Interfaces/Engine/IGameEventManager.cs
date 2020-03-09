@@ -19,10 +19,10 @@ namespace Trion.SDK.Interfaces.Engine
 
         #region Delegates
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool FireEventClientSideHookDelegate(GameEvent* Event);
+        public delegate bool FireEventClientSideHookDelegate(ref GameEvent Event);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        public delegate bool FireEventClientSideOriginalDelegate(void* Class, GameEvent* Event);
+        public delegate bool FireEventClientSideOriginalDelegate(void* Class, ref GameEvent Event);
         #endregion
 
         #region Structures
@@ -68,7 +68,7 @@ namespace Trion.SDK.Interfaces.Engine
             {
                 fixed (void* StructPtr = &this)
                 {
-                    Marshal.PtrToStringAnsi((IntPtr)CallVirtualFunction<GetStringDelegate>(StructPtr, 16)(StructPtr, Key, Value));
+                    CallVirtualFunction<GetStringDelegate>(StructPtr, 16)(StructPtr, Key, Value);
                 }
             }
             #endregion
@@ -76,7 +76,7 @@ namespace Trion.SDK.Interfaces.Engine
         #endregion
 
         #region Methods
-        public bool FireEventClientSideOriginal(GameEvent* Event) => CallOriginalFunction<FireEventClientSideOriginalDelegate>(9)(this, Event);
+        public bool FireEventClientSideOriginal(ref GameEvent Event) => CallOriginalFunction<FireEventClientSideOriginalDelegate>(9)(this, ref Event);
         #endregion
     }
 }

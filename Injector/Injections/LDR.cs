@@ -1,13 +1,14 @@
-﻿using Injector.Injections.Enums;
-using Injector.Injections.Interfaces;
-
-using System;
+﻿using System;
+using System.Linq;
 using System.Diagnostics;
 using System.IO;
 
+using Injector.Injections.Enums;
+using Injector.Injections.Interfaces;
+
 namespace Injector.Injections
 {
-    internal class LDR:IAttacker
+    internal class LDR : IAttacker
     {
         #region Variable
         private Process[] ProcessInfo;
@@ -21,9 +22,9 @@ namespace Injector.Injections
         IntPtr HandleProcess;
         IntPtr AllocationMemory;
         IntPtr ProcessLoadLibrary;
-        IntPtr CallFunction;
+        IntPtr CallFunctionPtr;
 
-        private bool IsDisposable = true;
+        private bool IsDisposable;
         #endregion
 
         #region Initialization
@@ -64,7 +65,7 @@ namespace Injector.Injections
             #endregion
 
             #region Allication Memory
-            AllocationMemory = NativeMethods.VirtualAllocEx(HandleProcess, IntPtr.Zero, (uint)(DllInfo.FullName.Length + 1), AllocationType.Commit, MemoryProtection.ExecuteReadWrite);
+            AllocationMemory = NativeMethods.VirtualAllocEx(HandleProcess, IntPtr.Zero, (uint)(DllInfo.FullName.Length + 1), AllocationType.Commit | AllocationType.Reserve, MemoryProtection.ExecuteReadWrite);
 
             if (AllocationMemory == IntPtr.Zero)
             {
@@ -73,7 +74,7 @@ namespace Injector.Injections
             #endregion
 
             #region Write Library
-            if (!NativeMethods.WriteProcessMemory(HandleProcess, AllocationMemory, DllInfo.FullName, DllInfo.FullName.Length + 1, IntPtr.Zero))
+            if (!NativeMethods.WriteProcessMemory(HandleProcess, AllocationMemory, DllInfo.FullName, DllInfo.FullName.Length, IntPtr.Zero))
             {
                 return ReturnCode.WRITE_LIBRARY_ERROR;
             }
@@ -86,35 +87,14 @@ namespace Injector.Injections
             {
                 return ReturnCode.INJECTING_ERROR;
             }
-
-            NativeMethods.WaitForSingleObject(ProcessLoadLibrary, MillisecondFlags.INFINITE);
             #endregion
 
             #region Call Function
             if (!string.IsNullOrWhiteSpace(ExportName))
             {
-                foreach (ProcessModule ProcessModule in ProcessInfo[0].Modules)
+                if(!CallFunction())
                 {
-                    if (ProcessModule.ModuleName == DllInfo.Name)
-                    {
-                        IntPtr ExportFunction = NativeMethods.GetProcAddress(ProcessModule.BaseAddress, ExportName);
-
-                        if (ExportFunction == IntPtr.Zero)
-                        {
-                            return ReturnCode.EXPORT_FUNCTION_NOT_FOUND;
-                        }
-
-                        CallFunction = NativeMethods.CreateRemoteThread(HandleProcess, IntPtr.Zero, 0, ExportFunction, AllocationMemory, 0, IntPtr.Zero);
-
-                        if (CallFunction == IntPtr.Zero)
-                        {
-                            return ReturnCode.CALL_FUNCTION_ERROR;
-                        }
-
-                        NativeMethods.WaitForSingleObject(CallFunction, MillisecondFlags.WAIT_ABANDONED);
-
-                        break;
-                    }
+                    return ReturnCode.EXPORT_FUNCTION_ERROR;
                 }
             }
             #endregion
@@ -127,7 +107,7 @@ namespace Injector.Injections
                 return ReturnCode.VIRTUAL_FREE_ERROR;
             }
 
-            if (!NativeMethods.CloseHandle(ProcessLoadLibrary) || !NativeMethods.CloseHandle(CallFunction) || !NativeMethods.CloseHandle(HandleProcess))
+            if (!NativeMethods.CloseHandle(ProcessLoadLibrary) || !NativeMethods.CloseHandle(CallFunctionPtr) || !NativeMethods.CloseHandle(HandleProcess))
             {
                 IsDisposable = true;
 
@@ -143,11 +123,33 @@ namespace Injector.Injections
             if (IsDisposable)
             {
                 NativeMethods.VirtualFreeEx(HandleProcess, AllocationMemory, 0, AllocationType.Release);
-
                 NativeMethods.CloseHandle(ProcessLoadLibrary);
-                NativeMethods.CloseHandle(CallFunction);
+                NativeMethods.CloseHandle(CallFunctionPtr);
                 NativeMethods.CloseHandle(HandleProcess);
             }
+        }
+        #endregion
+
+        #region Private Methods
+        private bool CallFunction()
+        {
+            foreach (IntPtr ExportFunction in from ProcessModule ProcessModule in ProcessInfo[0].Modules where ProcessModule.ModuleName == DllInfo.Name let ExportFunction = NativeMethods.GetProcAddress(ProcessModule.BaseAddress, ExportName) select ExportFunction)
+            {
+                if (ExportFunction == IntPtr.Zero)
+                {
+                    return false;
+                }
+
+                CallFunctionPtr = NativeMethods.CreateRemoteThread(HandleProcess, IntPtr.Zero, 0, ExportFunction, AllocationMemory, 0, IntPtr.Zero);
+                if (CallFunctionPtr == IntPtr.Zero)
+                {
+                    return false;
+                }
+
+                break;
+            }
+
+            return true;
         }
         #endregion
     }

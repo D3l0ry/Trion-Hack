@@ -16,8 +16,8 @@ namespace Trion.Client.Site
             TrionRequest.ClearParams();
 
             TrionRequest["method"] = "auth";
-            TrionRequest["login"] = "DanilPidor@ya.ru";
-            TrionRequest["password"] = "DanilPidor";
+            TrionRequest["login"] = "@ya.ru";
+            TrionRequest["password"] = "";
             TrionRequest["hwid"] = "1";
 
             return TrionObjectSerializer.Deserialize<User>(TrionRequest);
@@ -28,8 +28,8 @@ namespace Trion.Client.Site
             TrionRequest.ClearParams();
 
             TrionRequest["method"] = "auth";
-            TrionRequest["login"] = "DanilPidor@ya.ru";
-            TrionRequest["password"] = "DanilPidor";
+            TrionRequest["login"] = "@ya.ru";
+            TrionRequest["password"] = "";
             TrionRequest["hwid"] = "1";
 
             return TrionObjectSerializer.Deserialize<User>(TrionRequest);
@@ -40,8 +40,8 @@ namespace Trion.Client.Site
             TrionRequest.ClearParams();
 
             TrionRequest["method"] = "getUser";
-            TrionRequest["login"] = "DanilPidor@ya.ru";
-            TrionRequest["password"] = "DanilPidor";
+            TrionRequest["login"] = "@ya.ru";
+            TrionRequest["password"] = "";
             TrionRequest["hwid"] = "1";
 
             return TrionObjectSerializer.Deserialize<Profile>(TrionRequest);
@@ -52,8 +52,8 @@ namespace Trion.Client.Site
             TrionRequest.ClearParams();
 
             TrionRequest["method"] = "getUser";
-            TrionRequest["login"] = "DanilPidor@ya.ru";
-            TrionRequest["password"] = "DanilPidor";
+            TrionRequest["login"] = "@ya.ru";
+            TrionRequest["password"] = "";
             TrionRequest["hwid"] = "1";
 
             return TrionObjectSerializer.Deserialize<Profile>(TrionRequest);
@@ -64,8 +64,8 @@ namespace Trion.Client.Site
             TrionRequest.ClearParams();
 
             TrionRequest["method"] = "sethwid";
-            TrionRequest["login"] = "DanilPidor@ya.ru";
-            TrionRequest["password"] = "DanilPidor";
+            TrionRequest["login"] = "@ya.ru";
+            TrionRequest["password"] = "";
             TrionRequest["hwid"] = "1";
 
             return TrionObjectSerializer.Deserialize<Hwid>(TrionRequest);
@@ -76,8 +76,8 @@ namespace Trion.Client.Site
             TrionRequest.ClearParams();
 
             TrionRequest["method"] = "sethwid";
-            TrionRequest["login"] = "DanilPidor@ya.ru";
-            TrionRequest["password"] = "DanilPidor";
+            TrionRequest["login"] = "@ya.ru";
+            TrionRequest["password"] = "";
             TrionRequest["hwid"] = "1";
 
             return TrionObjectSerializer.Deserialize<Hwid>(TrionRequest);

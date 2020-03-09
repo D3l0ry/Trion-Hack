@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using Trion.Client.Configs;
@@ -9,11 +10,11 @@ using Trion.SDK.Interfaces.Client;
 using Trion.SDK.Interfaces.Client.Entity.Structures;
 using Trion.SDK.Interfaces.Engine;
 using Trion.SDK.Interfaces.Gui;
-using Trion.SDK.Structures.Modules;
+using Trion.SDK.Structures;
 
 namespace Trion.SDK.Interfaces
 {
-    internal unsafe class Hooks
+    internal unsafe struct Hooks
     {
         #region Delegates
         public static IClientMode.CreateMoveHookDelegate CreateMoveDelegate = CreateMove;
@@ -28,43 +29,43 @@ namespace Trion.SDK.Interfaces
 
         private static Main Main = new Main();
 
-        private static bool CreateMove(float Smt, void* CMD)
+        private static bool CreateMove(float Smt, ref IClientMode.UserCmd UserCmd)
         {
-            if (CMD == null)
+            if (UserCmd.IsNull)
             {
-                return Interface.ClientMode.CreateMoveOriginal(Smt, CMD);
+                return Interface.ClientMode.CreateMoveOriginal(Smt, ref UserCmd);
             }
 
-            IClientMode.UserCmd* UserCmd = (IClientMode.UserCmd*)CMD;
-
-            if (UserCmd->commandNumber == 0)
+            if (UserCmd.commandNumber == 0)
             {
-                return Interface.ClientMode.CreateMoveOriginal(Smt, CMD);
+                return Interface.ClientMode.CreateMoveOriginal(Smt, ref UserCmd);
             }
 
-            if (!Interface.VEngineClient.IsInGame)
+            BasePlayer* localPlayer = Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer;
+
+            if (localPlayer == null)
             {
                 return false;
             }
 
-            if (ConfigManager.CVisual.BunnyHop)
+            if (ConfigManager.CMisc.BunnyHop)
             {
-                Misc.BunnyHop(UserCmd);
+                Misc.BunnyHop(ref UserCmd, localPlayer);
             }
 
             if (ConfigManager.CVisual.RevealRanks)
             {
-                Visual.RevealRanks(UserCmd);
+                Visual.RevealRanks(ref UserCmd);
             }
 
-            if (ConfigManager.CVisual.AutoStrafe)
+            if (ConfigManager.CMisc.AutoStrafe)
             {
-                Misc.AutoStrafe(UserCmd);
+                Misc.AutoStrafe(ref UserCmd, localPlayer);
             }
 
-            if (ConfigManager.CVisual.MoonWalk)
+            if (ConfigManager.CMisc.MoonWalk)
             {
-                Misc.MoonWalk(UserCmd);
+                Misc.MoonWalk(ref UserCmd, localPlayer);
             }
 
             return false;
@@ -77,14 +78,16 @@ namespace Trion.SDK.Interfaces
 
         private static int DoPostScreenEffects(int Param)
         {
-            if(!Interface.VEngineClient.IsInGame)
+            BasePlayer* localPlayer = Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer;
+
+            if (localPlayer == null)
             {
                 return Interface.ClientMode.DoPostScreenEffectsOriginal(Param);
             }
 
             if (ConfigManager.CVisual.GlowEnable)
             {
-                Visual.GlowRender();
+                Visual.GlowRender(localPlayer);
             }
 
             if (ConfigManager.CVisual.NoFlash)
@@ -97,35 +100,45 @@ namespace Trion.SDK.Interfaces
 
         private static void FrameStageNotify(IBaseClientDLL.FrameStage FrameStage)
         {
-            if(!Interface.VEngineClient.IsInGame)
+            if (FrameStage == IBaseClientDLL.FrameStage.RENDER_START)
             {
-                Interface.BaseClientDLL.FrameStageNotifyOriginal(FrameStage);
-
-                return;
+                Visual.FakePrime();
             }
 
-            if (ConfigManager.CSkinChanger.SkinChangerActive)
+            if (FrameStage == IBaseClientDLL.FrameStage.NET_UPDATE_POSTDATAUPDATE_START)
             {
-                SkinChanger.OnFrameStage(FrameStage);
+                BasePlayer* localPlayer = Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer;
+
+                if (localPlayer == null)
+                {
+                    Interface.BaseClientDLL.FrameStageNotifyOriginal(FrameStage);
+
+                    return;
+                }
+
+                if (ConfigManager.CSkinChanger.SkinChangerActive)
+                {
+                    SkinChanger.OnFrameStage(FrameStage, localPlayer);
+                }
             }
 
             Interface.BaseClientDLL.FrameStageNotifyOriginal(FrameStage);
         }
 
-        private static bool FireEventClientSide(IGameEventManager.GameEvent* Event)
+        private static bool FireEventClientSide(ref IGameEventManager.GameEvent Event)
         {
-            if (Event->GetName().Equals("player_death"))
+            if (Event.GetName() == "player_death")
             {
-                SkinChanger.ApplyKillIcon(Event);
-                SkinChanger.UpdateStatTrack(Event);
+                SkinChanger.ApplyKillIcon(ref Event);
+                SkinChanger.ApplyStatTrack(ref Event);
             }
 
-            return Interface.GameEventManager.FireEventClientSideOriginal(Event);
+            return Interface.GameEventManager.FireEventClientSideOriginal(ref Event);
         }
 
         private static void PaintTraverse(uint Panel, bool ForcePaint, bool AllowForce)
         {
-            if (Interface.Panel.GetName(Panel).Equals("MatSystemTopPanel"))
+            if (Interface.Panel.GetName(Panel) == "MatSystemTopPanel")
             {
                 if (ConfigManager.CVisual.WaterMark)
                 {
@@ -148,152 +161,32 @@ namespace Trion.SDK.Interfaces
             return Interface.Surface.LockCursor();
         }
 
-        private static void SetViewModelSequence(ref IBaseClientDLL.RecvProxyData Data, void* Struct, void* Out)
+        private static void SetViewModelSequence(ref IBaseClientDLL.RecvProxyData data, void* Struct, void* Out)
         {
             var LocalPlayer = Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer;
             if (LocalPlayer == null || !LocalPlayer->IsAlive)
             {
-                Marshal.GetDelegateForFunctionPointer<NetVar.SetViewModelSequenceOriginalDelegate>((IntPtr)Interface.NetVar.SequencePtr)(ref Data, Struct, Out);
+                Marshal.GetDelegateForFunctionPointer<NetVar.SetViewModelSequenceOriginalDelegate>((IntPtr)Interface.NetVar.SequencePtr)(ref data, Struct, Out);
 
                 return;
             }
 
-            BaseViewModel* ViewModel = (BaseViewModel*)Struct;
-            if (ViewModel != null)
+            BaseViewModel* viewModel = (BaseViewModel*)(Struct);
+
+            if (viewModel != null)
             {
-                var Owner = ViewModel->GetOwner;
+                var Owner = viewModel->GetOwner;
 
                 if (Owner != null && Owner == LocalPlayer)
                 {
-                    string ModelName = Interface.ModelInfoClient.GetModelName(Interface.ModelInfoClient.GetModel(ViewModel->ModelIndex));
-                    int Sequence = Data.m_Value.m_Int;
+                    string ModelName = Interface.ModelInfoClient.GetModelName(Interface.ModelInfoClient.GetModel(viewModel->ModelIndex));
+                    int Sequence = data.m_Value.m_Int;
 
-                    if (ModelName.Equals("models/weapons/v_knife_butterfly.mdl"))
-                    {
-                        switch (Sequence)
-                        {
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_DRAW:
-                                Sequence = Weapon.GetRandomInt((int)SkinChanger.AnimationSequence.SEQUENCE_BUTTERFLY_DRAW, (int)SkinChanger.AnimationSequence.SEQUENCE_BUTTERFLY_DRAW2);
-                                break;
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_BUTTERFLY_LOOKAT01:
-                                Sequence = Weapon.GetRandomInt((int)SkinChanger.AnimationSequence.SEQUENCE_BUTTERFLY_LOOKAT01, (int)SkinChanger.AnimationSequence.SEQUENCE_BUTTERFLY_LOOKAT03);
-                                break;
-                            default:
-                                Sequence++;
-                                break;
-                        }
-                    }
-                    else if (ModelName.Equals("models/weapons/v_knife_falchion_advanced.mdl"))
-                    {
-                        switch (Sequence)
-                        {
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_IDLE2:
-                                Sequence = (int)SkinChanger.AnimationSequence.SEQUENCE_FALCHION_IDLE1;
-                                break;
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_HEAVY_MISS1:
-                                Sequence = Weapon.GetRandomInt((int)SkinChanger.AnimationSequence.SEQUENCE_FALCHION_HEAVY_MISS1, (int)SkinChanger.AnimationSequence.SEQUENCE_FALCHION_HEAVY_MISS1_NOFLIP);
-                                break;
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                                Sequence = Weapon.GetRandomInt((int)SkinChanger.AnimationSequence.SEQUENCE_FALCHION_LOOKAT01, (int)SkinChanger.AnimationSequence.SEQUENCE_FALCHION_LOOKAT02);
-                                break;
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_DRAW:
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_IDLE1:
-                                break;
-                            default:
-                                Sequence -= 1;
-                                break;
-                        }
-                    }
-                    else if (ModelName.Equals("models/weapons/v_knife_css.mdl"))
-                    {
-                        switch (Sequence)
-                        {
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                                Sequence = Weapon.GetRandomInt((int)SkinChanger.AnimationSequence.SEQUENCE_CSS_LOOKAT01, (int)SkinChanger.AnimationSequence.SEQUENCE_CSS_LOOKAT02);
-                                break;
-                        }
-                    }
-                    else if (ModelName.Equals("models/weapons/v_knife_push.mdl"))
-                    {
-                        switch (Sequence)
-                        {
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_IDLE2:
-                                Sequence = (int)SkinChanger.AnimationSequence.SEQUENCE_DAGGERS_IDLE1;
-                                break;
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_LIGHT_MISS1:
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_LIGHT_MISS2:
-                                Sequence = Weapon.GetRandomInt((int)SkinChanger.AnimationSequence.SEQUENCE_DAGGERS_LIGHT_MISS1, (int)SkinChanger.AnimationSequence.SEQUENCE_DAGGERS_LIGHT_MISS5);
-                                break;
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_HEAVY_MISS1:
-                                Sequence = Weapon.GetRandomInt((int)SkinChanger.AnimationSequence.SEQUENCE_DAGGERS_HEAVY_MISS2, (int)SkinChanger.AnimationSequence.SEQUENCE_DAGGERS_HEAVY_MISS1);
-                                break;
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_HEAVY_HIT1:
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_HEAVY_BACKSTAB:
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                                Sequence += 3;
-                                break;
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_DRAW:
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_IDLE1:
-                                break;
-                            default:
-                                Sequence += 2;
-                                break;
-                        }
-                    }
-                    else if (ModelName.Equals("models/weapons/v_knife_survival_bowie.mdl"))
-                    {
-                        switch (Sequence)
-                        {
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_DRAW:
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_IDLE1:
-                                break;
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_IDLE2:
-                                Sequence = (int)SkinChanger.AnimationSequence.SEQUENCE_BOWIE_IDLE1;
-                                break;
-                            default:
-                                Sequence -= 1;
-                                break;
-                        }
-                    }
-                    else if (ModelName.Equals("models/weapons/v_knife_ursus.mdl") || ModelName.Equals("models/weapons/v_knife_cord.mdl") || ModelName.Equals("models/weapons/v_knife_canis.mdl") || ModelName.Equals("models/weapons/v_knife_outdoor.mdl") || ModelName.Equals("models/weapons/v_knife_skeleton.mdl"))
-                    {
-                        switch (Sequence)
-                        {
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_DRAW:
-                                Sequence = Weapon.GetRandomInt((int)SkinChanger.AnimationSequence.SEQUENCE_BUTTERFLY_DRAW, (int)SkinChanger.AnimationSequence.SEQUENCE_BUTTERFLY_DRAW2);
-                                break;
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                                Sequence = Weapon.GetRandomInt((int)SkinChanger.AnimationSequence.SEQUENCE_BUTTERFLY_LOOKAT01, 14);
-                                break;
-                            default:
-                                Sequence += 1;
-                                break;
-                        }
-                    }
-                    else if (ModelName.Equals("models/weapons/v_knife_stiletto.mdl"))
-                    {
-                        switch (Sequence)
-                        {
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                                Sequence = Weapon.GetRandomInt(12, 13);
-                                break;
-                        }
-                    }
-                    else if (ModelName.Equals("models/weapons/v_knife_widowmaker.mdl"))
-                    {
-                        switch (Sequence)
-                        {
-                            case (int)SkinChanger.AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                                Sequence = Weapon.GetRandomInt(14, 15);
-                                break;
-                        }
-                    }
-
-                    Data.m_Value.m_Int = Sequence;
+                    data.m_Value.m_Int = SkinChanger.GetSequence(ModelName, Sequence);
                 }
             }
 
-            Marshal.GetDelegateForFunctionPointer<NetVar.SetViewModelSequenceOriginalDelegate>((IntPtr)Interface.NetVar.SequencePtr)(ref Data, Struct, Out);
+            Marshal.GetDelegateForFunctionPointer<NetVar.SetViewModelSequenceOriginalDelegate>((IntPtr)Interface.NetVar.SequencePtr)(ref data, Struct, Out);
         }
     }
 }

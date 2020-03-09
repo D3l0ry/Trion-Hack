@@ -64,34 +64,31 @@ namespace Trion.SDK.Web
         #endregion
 
         #region Methods
-        private HttpWebRequest GetWebRequest
+        private HttpWebRequest GetWebRequest()
         {
-            get
+            HttpWebRequest HttpWebRequest;
+
+            HttpWebRequest = RequestMethod == RequestMethod.GET ? (HttpWebRequest)WebRequest.Create(Address + Encoding.UTF8.GetString(GetParam())) : (HttpWebRequest)WebRequest.Create(Address);
+            HttpWebRequest.Method = RequestMethod == RequestMethod.GET ? "GET" : "POST";
+
+            if (RequestHeader != null)
             {
-                HttpWebRequest HttpWebRequest;
-
-                HttpWebRequest = RequestMethod == RequestMethod.GET ? (HttpWebRequest)WebRequest.Create(Address + Encoding.UTF8.GetString(GetParam())) : (HttpWebRequest)WebRequest.Create(Address);
-                HttpWebRequest.Method = RequestMethod == RequestMethod.GET ? "GET" : "POST";
-
-                if (RequestHeader != null)
+                foreach (var Headers in RequestHeader?.RequestValue)
                 {
-                    foreach (var Headers in RequestHeader?.RequestValue)
-                    {
-                        HttpWebRequest.Headers.Add(Headers.Key, Headers.Value);
-                    }
+                    HttpWebRequest.Headers.Add(Headers.Key, Headers.Value);
                 }
-
-                HttpWebRequest.ContentType = ContentType ?? "application/x-www-form-urlencoded";
-                HttpWebRequest.Accept = Accept ?? "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";
-                HttpWebRequest.UserAgent = UserAgent ?? "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 YaBrowser/19.3.1.887 Yowser/2.5 Safari/537.36";
-
-                return HttpWebRequest;
             }
+
+            HttpWebRequest.ContentType = ContentType ?? "application/x-www-form-urlencoded";
+            HttpWebRequest.Accept = Accept ?? "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";
+            HttpWebRequest.UserAgent = UserAgent ?? "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 YaBrowser/19.3.1.887 Yowser/2.5 Safari/537.36";
+
+            return HttpWebRequest;
         }
 
         private HttpWebResponse Response()
         {
-            HttpWebRequest HttpWebRequest = GetWebRequest;
+            HttpWebRequest HttpWebRequest = GetWebRequest();
 
             if (RequestMethod == RequestMethod.POST)
             {
@@ -110,7 +107,7 @@ namespace Trion.SDK.Web
 
         public async Task<WebResponse> ResponseAsync()
         {
-            HttpWebRequest HttpWebRequest = GetWebRequest;
+            HttpWebRequest HttpWebRequest = GetWebRequest();
 
             if (RequestMethod == RequestMethod.POST)
             {

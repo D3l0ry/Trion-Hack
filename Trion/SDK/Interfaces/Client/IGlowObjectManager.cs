@@ -1,44 +1,20 @@
-﻿namespace Trion.SDK.Interfaces.Client
+﻿using System.Runtime.InteropServices;
+
+using Trion.Client.Configs;
+
+namespace Trion.SDK.Interfaces.Client
 {
+    [StructLayout(LayoutKind.Explicit)]
     internal unsafe struct IGlowObjectManager
     {
-        #region Variables
-        private uint Class_Base;
-        #endregion
-
-        #region Initializations
-        public IGlowObjectManager(uint Class) => Class_Base = Class;
-        #endregion
-
-        #region Operators
-        public static implicit operator IGlowObjectManager(uint Value) => new IGlowObjectManager(Value);
-
-        public static implicit operator uint(IGlowObjectManager Value) => Value.Class_Base;
-        #endregion
-
-        public struct GlowColor
+        public struct GlowObjectDefinition
         {
-            #region Variables
+            public void* entity;
+
             public float Red;
             public float Green;
             public float Blue;
             public float Alpha;
-            #endregion
-
-            public GlowColor(float red, float green, float blue, float alpha)
-            {
-                Red = red;
-                Green = green;
-                Blue = blue;
-                Alpha = alpha;
-            }
-        }
-
-        public struct GlowObjectDefinition
-        {
-            void* entity;
-
-            public GlowColor Color;
 
             fixed byte pad[4];
 
@@ -64,5 +40,39 @@
 
             int nextFreeSlot;
         };
+
+        [FieldOffset(0x0)]
+        private GlowObjectDefinition* GlowObjectDefinitions;
+
+        [FieldOffset(0xC)]
+        public int Size;
+
+        public void SetEntity(int index, void* entity) => GlowObjectDefinitions[index].entity = entity;
+
+        public void SetColor(int index, bool isHealth = false, int health = 0)
+        {
+            if(isHealth)
+            {
+                float hp = health / 100f;
+
+                GlowObjectDefinitions[index].Red = 1 - hp;
+                GlowObjectDefinitions[index].Green = hp;
+                GlowObjectDefinitions[index].Blue = 0;
+            }
+            else
+            {
+                GlowObjectDefinitions[index].Red = ConfigManager.CVisual.Red;
+                GlowObjectDefinitions[index].Green = ConfigManager.CVisual.Green;
+                GlowObjectDefinitions[index].Blue = ConfigManager.CVisual.Blue;
+            }
+
+            GlowObjectDefinitions[index].Alpha = ConfigManager.CVisual.Alpha;
+        }
+
+        public void SetRenderFlags(int index,bool occuluded, bool unocculuded)
+        {
+            GlowObjectDefinitions[index].renderWhenOccluded = occuluded;
+            GlowObjectDefinitions[index].renderWhenUnoccluded = unocculuded;
+        }
     }
 }

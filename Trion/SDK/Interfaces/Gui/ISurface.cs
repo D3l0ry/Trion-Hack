@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
+
 using Trion.SDK.Surface.Drawing;
 using Trion.SDK.VMT;
 
@@ -9,10 +10,6 @@ namespace Trion.SDK.Interfaces.Gui
     internal unsafe class ISurface : VMTable
     {
         #region Initializations
-        protected ISurface()
-        {
-        }
-
         public ISurface(void* Base) : base(Base)
         {
         }

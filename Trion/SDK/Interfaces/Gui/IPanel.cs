@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+
 using Trion.SDK.VMT;
 
 namespace Trion.SDK.Interfaces.Gui

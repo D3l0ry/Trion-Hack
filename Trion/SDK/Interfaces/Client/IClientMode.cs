@@ -36,33 +36,45 @@ namespace Trion.SDK.Interfaces.Client
         #endregion
 
         #region Structures
+        [StructLayout(LayoutKind.Sequential)]
         public struct UserCmd
         {
             private int pad;
             public int commandNumber;
-            public int tickCount;
+            private int tickCount;
             public Vector3 viewangles;
-            public Vector3 aimdirection;
+            private Vector3 aimdirection;
             public float forwardmove;
-            public  float sidemove;
-            public float upmove;
-            public  Buttons buttons;
-            public int impulse;
-            public int weaponselect;
-            public int weaponsubtype;
-            public int randomSeed;
+            public float sidemove;
+            private float upmove;
+            public Buttons buttons;
+            private int impulse;
+            private int weaponselect;
+            private int weaponsubtype;
+            private int randomSeed;
             public short mousedx;
             public short mousedy;
-            public bool hasbeenpredicted;
+            private bool hasbeenpredicted;
+
+            public bool IsNull
+            {
+                get
+                {
+                    fixed (void* Class = &this)
+                    {
+                        return Class == null ? true : false;
+                    }
+                }
+            }
         };
         #endregion
 
         #region Delegates
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        public delegate bool CreateMoveDelegate(void* Class, float Smt, void* UserCmd);
+        public delegate bool CreateMoveDelegate(void* Class, float Smt, ref UserCmd UserCmd);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool CreateMoveHookDelegate(float Smt, void* UserCmd);
+        public delegate bool CreateMoveHookDelegate(float Smt, ref UserCmd UserCmd);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         public delegate float GetViewModelFovDelegate(void* Class);
@@ -78,7 +90,7 @@ namespace Trion.SDK.Interfaces.Client
         #endregion
 
         #region Methods
-        public bool CreateMoveOriginal(float Smt, void* UserCmd) => CallOriginalFunction<CreateMoveDelegate>(24)(this, Smt, UserCmd);
+        public bool CreateMoveOriginal(float Smt, ref UserCmd UserCmd) => CallOriginalFunction<CreateMoveDelegate>(24)(this, Smt, ref UserCmd);
 
         public float GetViewModelFovOriginal() => CallOriginalFunction<GetViewModelFovDelegate>(35)(this);
 

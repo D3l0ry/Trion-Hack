@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Numerics;
 using System.Runtime.InteropServices;
+
 using Trion.SDK.Dumpers;
 using Trion.SDK.Structures.Numerics;
 using Trion.SDK.VMT;
@@ -81,6 +81,9 @@ namespace Trion.SDK.Interfaces.Engine
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate bool IsConnectedDelegate(void* Class);
 
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+        private delegate float* WorldToScreenMatrixDelegate(void* Class);
+
         [UnmanagedFunctionPointer( CallingConvention.ThisCall)]
         private delegate void SetClanTagDelegate(string Arg1, string Arg2);
         #endregion
@@ -123,6 +126,8 @@ namespace Trion.SDK.Interfaces.Engine
         public bool IsInGame => CallVirtualFunction<IsInGameDelegate>(26)(this);
 
         public bool IsConnected => CallVirtualFunction<IsConnectedDelegate>(27)(this);
+
+        public float* WorldToScreen => CallVirtualFunction<WorldToScreenMatrixDelegate>(37)(this);
 
         public void SetClanTag(string ClanTag) => Marshal.GetDelegateForFunctionPointer<SetClanTagDelegate>((IntPtr)Offsets.dwSetClanTag)(ClanTag,ClanTag);
         #endregion

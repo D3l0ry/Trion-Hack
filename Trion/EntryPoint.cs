@@ -1,21 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-
-using Trion.Client.Site;
-using Trion.Client.Site.Strucutres;
+﻿using Trion.SDK.Dumpers;
 using Trion.SDK.Interfaces;
-using Trion.SDK.Interfaces.Client;
-using Trion.SDK.Interfaces.Gui;
-using Trion.SDK.Serializers;
-using Trion.SDK.Structures.Numerics;
-using Trion.SDK.VMT;
-using static Trion.SDK.Interfaces.Engine.IVEngineClient;
+using Trion.SDK.Interfaces.Engine;
 
 namespace Trion
 {
-    unsafe class EntryPoint
+    internal unsafe struct EntryPoint
     {
         public static int DLLMain()
         {
@@ -23,8 +12,9 @@ namespace Trion
             Interface.ClientMode.Hook(24, Hooks.CreateMoveDelegate);
             Interface.GameEventManager.Hook(9, Hooks.FireEventClientSideDelegate);
             Interface.BaseClientDLL.Hook(37, Hooks.FrameStageNotifyDelegate);
+            Interface.ClientMode.Hook(44, Hooks.DoPostScreenEffectsDelegate);
             Interface.NetVar.HookProp("DT_BaseViewModel", "m_nSequence", Hooks.SetViewModelSequenceDelegate, ref Interface.NetVar.SequencePtr);
-            Interface.GameUI.MessageBox("HI", Api.Authorization().IsHwid.ToString());
+            Interface.Surface.Hook(67, Hooks.LockCursorDelegate);
             return 0;
         }
     }

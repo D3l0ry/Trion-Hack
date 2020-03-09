@@ -1,10 +1,11 @@
 ﻿using System.Runtime.InteropServices;
+
 using Trion.SDK.Interfaces.Client.Entity.Structures;
 using Trion.SDK.VMT;
 
 namespace Trion.SDK.Interfaces.Client.Entity
 {
-    internal unsafe struct IClientEntity
+    internal unsafe ref struct IClientEntity
     {
         #region Delegates
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]

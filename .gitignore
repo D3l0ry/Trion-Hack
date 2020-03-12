@@ -14,7 +14,7 @@
 *.userprefs
 
 #Api(Site)
-**/*/Trion/Client/Site/
+**/Trion/Client/Site/
 
 # Build results
 [Dd]ebug/

@@ -1,10 +1,11 @@
-﻿using Trion.SDK.Dumpers;
+﻿using System;
+using Trion.SDK.Dumpers;
 using Trion.SDK.Interfaces;
 using Trion.SDK.Interfaces.Engine;
 
 namespace Trion
 {
-    internal unsafe struct EntryPoint
+    internal unsafe class EntryPoint
     {
         public static int DLLMain()
         {
@@ -15,6 +16,7 @@ namespace Trion
             Interface.ClientMode.Hook(44, Hooks.DoPostScreenEffectsDelegate);
             Interface.NetVar.HookProp("DT_BaseViewModel", "m_nSequence", Hooks.SetViewModelSequenceDelegate, ref Interface.NetVar.SequencePtr);
             Interface.Surface.Hook(67, Hooks.LockCursorDelegate);
+            Console.Beep();
             return 0;
         }
     }

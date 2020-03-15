@@ -47,12 +47,11 @@
 
   <ItemGroup>
     <Compile Remove="Client\Site\**" />
+    <Compile Remove="Client\Новая папка\**" />
     <EmbeddedResource Remove="Client\Site\**" />
+    <EmbeddedResource Remove="Client\Новая папка\**" />
     <None Remove="Client\Site\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Client\Новая папка\" />
+    <None Remove="Client\Новая папка\**" />
   </ItemGroup>
 
 </Project>

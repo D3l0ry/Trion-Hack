@@ -45,4 +45,10 @@
     <OutputPath>P:\Trion Compilation\Internal\</OutputPath>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Client\Site\**" />
+    <EmbeddedResource Remove="Client\Site\**" />
+    <None Remove="Client\Site\**" />
+  </ItemGroup>
+
 </Project>

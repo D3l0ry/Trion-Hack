@@ -51,4 +51,8 @@
     <None Remove="Client\Site\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Client\Новая папка\" />
+  </ItemGroup>
+
 </Project>

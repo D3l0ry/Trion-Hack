@@ -10,7 +10,7 @@ namespace CMDInjector
     {
         static void Main(string[] args)
         {
-            LDR lDR = new LDR("csgo", "test.dll", "DLLMain");
+            LDR lDR = new LDR("csgo", "test.dll", "DllMain");
             Console.WriteLine(lDR.Injecting().ToString());
             Console.ReadLine();
         }

@@ -64,10 +64,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Enums\AllocationType.cs" />
-    <Compile Include="Enums\MemoryProtection.cs" />
-    <Compile Include="Enums\MillisecondFlags.cs" />
-    <Compile Include="Enums\ProcessAccessFlags.cs" />
     <Compile Include="Enums\ReturnCode.cs" />
     <Compile Include="LDR.cs" />
     <Compile Include="Program.cs" />

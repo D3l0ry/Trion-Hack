@@ -1,12 +1,13 @@
-﻿using CMDInjector.Enums;
-using NativeManager.MemoryInteraction;
-using NativeManager.WinApi;
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
+
+using NativeManager.MemoryInteraction;
+using NativeManager.WinApi;
+
+using CMDInjector.Enums;
 
 namespace CMDInjector
 {
@@ -24,7 +25,6 @@ namespace CMDInjector
         public LDR(string ProcessName, string DllName, string ExportName)
         {
             MemoryManager = new MemoryManager(ProcessName);
-            //ProcessInfo = Process.GetProcessesByName(ProcessName);
 
             DllInfo = new FileInfo(DllName);
 
@@ -42,13 +42,13 @@ namespace CMDInjector
 
             Assembly.LoadFrom(DllInfo.Name);
 
-            IntPtr AllocationMemory = MemoryManager.Alloc((uint)DllInfo.FullName.Length);
+            IntPtr AllocationMemory = MemoryManager.GetAllocator().Alloc((uint)DllInfo.FullName.Length);
             if (AllocationMemory == IntPtr.Zero)
             {
                 return ReturnCode.ALLOCATION_MEMORY_ERROR;
             }
 
-            if (!MemoryManager.BlockCopy(Encoding.UTF8.GetBytes(DllInfo.FullName), 0, AllocationMemory.ToPointer(), 0, DllInfo.FullName.Length))
+            if (!MemoryManager.BlockCopy(Encoding.UTF8.GetBytes(DllInfo.FullName), 0, AllocationMemory, 0, DllInfo.FullName.Length))
             {
                 return ReturnCode.WRITE_LIBRARY_ERROR;
             }
@@ -58,9 +58,9 @@ namespace CMDInjector
                 return ReturnCode.INJECTING_ERROR;
             }
 
-            MemoryManager.Free(AllocationMemory);
+            MemoryManager.GetAllocator().Free(AllocationMemory);
 
-            ProcessModule ProcessModule = MemoryManager.GetModule(DllInfo.Name);
+            ProcessModule ProcessModule = MemoryManager.GetProcessInfo().GetModule(DllInfo.Name);
             if (ProcessModule != null)
             {
                 if (!MemoryManager.GetExecutor().Execute(Kernel32.GetProcAddress(ProcessModule.BaseAddress, ExportName), IntPtr.Zero))

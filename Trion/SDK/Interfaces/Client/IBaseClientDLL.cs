@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-using Trion.SDK.Dumpers;
 using Trion.SDK.VMT;
 
 namespace Trion.SDK.Interfaces.Client

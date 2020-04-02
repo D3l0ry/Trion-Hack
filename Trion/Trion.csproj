@@ -41,17 +41,23 @@
     <DebugSymbols>false</DebugSymbols>
     <ErrorReport>prompt</ErrorReport>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>P:\Trion Compilation\Internal\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Client\Site\**" />
     <Compile Remove="Client\Новая папка\**" />
+    <Compile Remove="SDK\Serializers\**" />
+    <Compile Remove="SDK\Web\**" />
     <EmbeddedResource Remove="Client\Site\**" />
     <EmbeddedResource Remove="Client\Новая папка\**" />
+    <EmbeddedResource Remove="SDK\Serializers\**" />
+    <EmbeddedResource Remove="SDK\Web\**" />
     <None Remove="Client\Site\**" />
     <None Remove="Client\Новая папка\**" />
+    <None Remove="SDK\Serializers\**" />
+    <None Remove="SDK\Web\**" />
   </ItemGroup>
 
 </Project>

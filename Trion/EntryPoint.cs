@@ -1,13 +1,12 @@
 ﻿using System;
-using Trion.SDK.Dumpers;
+
 using Trion.SDK.Interfaces;
-using Trion.SDK.Interfaces.Engine;
 
 namespace Trion
 {
     internal unsafe class EntryPoint
     {
-        public static int DLLMain()
+        public static int DllMain(IntPtr hinstDLL, uint fdwReason, IntPtr lpvReserved)
         {
             Interface.Panel.Hook(41, Hooks.PaintTraverseDelegate);
             Interface.ClientMode.Hook(24, Hooks.CreateMoveDelegate);

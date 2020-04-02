@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using Trion.Client.Configs;
@@ -10,7 +9,6 @@ using Trion.SDK.Interfaces.Client;
 using Trion.SDK.Interfaces.Client.Entity.Structures;
 using Trion.SDK.Interfaces.Engine;
 using Trion.SDK.Interfaces.Gui;
-using Trion.SDK.Structures;
 
 namespace Trion.SDK.Interfaces
 {

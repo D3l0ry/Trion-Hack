@@ -12,12 +12,12 @@ namespace Trion.SDK.Interfaces
     internal unsafe static class Interface
     {
         #region Libraries
-        public static uint ClientAddress = (uint)GetLibraryAddress("client_panorama.dll");
-        public static uint EngineAddress = (uint)GetLibraryAddress("engine.dll");
-        public static uint ValveStdFactory = (uint)GetLibraryAddress("vstdlib.dll");
-        public static uint ValveGui = (uint)GetLibraryAddress("vgui2.dll");
-        public static uint ValveGuiMatSurface = (uint)GetLibraryAddress("vguimatsurface.dll");
-        public static uint DataCache = (uint)GetLibraryAddress("datacache.dll");
+        public static IntPtr ClientAddress = GetLibraryAddress("client_panorama.dll");
+        public static IntPtr EngineAddress = GetLibraryAddress("engine.dll");
+        public static IntPtr ValveStdFactory = GetLibraryAddress("vstdlib.dll");
+        public static IntPtr ValveGui = GetLibraryAddress("vgui2.dll");
+        public static IntPtr ValveGuiMatSurface = GetLibraryAddress("vguimatsurface.dll");
+        public static IntPtr DataCache = GetLibraryAddress("datacache.dll");
         #endregion
 
         #region Delegates
@@ -35,8 +35,6 @@ namespace Trion.SDK.Interfaces
         private static void* GetInterface(string Library, string Function) => GetInterface(Library)(Function, IntPtr.Zero);
 
         private static void* GetInterface(this IntPtr Library, string Function) => GetInterface(Library)(Function, IntPtr.Zero);
-
-        private static void* GetInterface(this uint Library, string Function) => GetInterface((IntPtr)Library)(Function, IntPtr.Zero);
         #endregion
 
         #region Interfaces
@@ -46,7 +44,6 @@ namespace Trion.SDK.Interfaces
         public static IClientMode ClientMode = new IClientMode(**(void***)((*(uint**)BaseClientDLL)[10] + 0x5));
 
         public static IVEngineClient VEngineClient = new IVEngineClient(EngineAddress.GetInterface("VEngineClient014"));
-        public static IEngineTraceClient EngineTraceClient = new IEngineTraceClient(EngineAddress.GetInterface("EngineTraceClient004"));
         public static IVModelInfoClient ModelInfoClient = new IVModelInfoClient(EngineAddress.GetInterface("VModelInfoClient004"));
         public static IGameEventManager GameEventManager = new IGameEventManager(EngineAddress.GetInterface("GAMEEVENTSMANAGER002"));
 

@@ -10,10 +10,6 @@ namespace Trion.SDK.Interfaces.Engine
     internal unsafe class IVEngineClient : VMTable
     {
         #region Initialization
-        public IVEngineClient(void* Base) : base(Base)
-        {
-        }
-
         public IVEngineClient(IntPtr Base) : base(Base)
         {
         }

@@ -8,10 +8,6 @@ namespace Trion.SDK.Interfaces.Gui
     internal unsafe class IPanel : VMTable
     {
         #region Initializations
-        public IPanel(void* Base) : base(Base)
-        {
-        }
-
         public IPanel(IntPtr Base) : base(Base)
         {
         }

@@ -9,10 +9,6 @@ namespace Trion.SDK.Interfaces.Client
     internal unsafe class IClientEntityList : VMTable
     {
         #region Initialization
-        public IClientEntityList(void* Base) : base(Base)
-        {
-        }
-
         public IClientEntityList(IntPtr Base) : base(Base)
         {
         }
@@ -33,10 +29,6 @@ namespace Trion.SDK.Interfaces.Client
         public IClientEntity* GetClientEntity(int Index) => CallVirtualFunction<GetClientEntityDelegate>(3)(this, Index);
 
         public IClientEntity* GetClientEntityFromHandle(void* Handle) => CallVirtualFunction<GetClientEntityFromHandleDelegate>(4)(this, Handle);
-
-        public void* GetClientEntityAddress(int Index) => CallVirtualFunction<GetClientEntityDelegate>(3)(this, Index);
-
-        public void* GetClientEntityFromHandleAddress(void* Handle) => CallVirtualFunction<GetClientEntityFromHandleDelegate>(4)(this, Handle);
 
         public int GetHighestEntityIndex => CallVirtualFunction<GetHighestEntityIndexDelegate>(6)(this);
         #endregion

@@ -8,10 +8,6 @@ namespace Trion.SDK.Interfaces.Engine
     internal unsafe class IVModelInfoClient : VMTable
     {
         #region Initialization
-        public IVModelInfoClient(void* Base) : base(Base)
-        {
-        }
-
         public IVModelInfoClient(IntPtr Base) : base(Base)
         {
         }

@@ -10,10 +10,6 @@ namespace Trion.SDK.Interfaces.Gui
     internal unsafe class ISurface : VMTable
     {
         #region Initializations
-        public ISurface(void* Base) : base(Base)
-        {
-        }
-
         public ISurface(IntPtr Base) : base(Base)
         {
         }

@@ -8,10 +8,6 @@ namespace Trion.SDK.Interfaces.Engine
     internal unsafe class IGameEventManager : VMTable
     {
         #region Initializations
-        public IGameEventManager(void* Base) : base(Base)
-        {
-        }
-
         public IGameEventManager(IntPtr Base) : base(Base)
         {
         }

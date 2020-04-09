@@ -8,10 +8,6 @@ namespace Trion.SDK.Interfaces.Client
     internal unsafe class IBaseClientDLL : VMTable
     {
         #region Initialization
-        public IBaseClientDLL(void* Base) : base(Base)
-        {
-        }
-
         public IBaseClientDLL(IntPtr Base) : base(Base)
         {
         }

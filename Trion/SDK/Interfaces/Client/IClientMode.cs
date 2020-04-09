@@ -9,10 +9,6 @@ namespace Trion.SDK.Interfaces.Client
     internal unsafe class IClientMode : VMTable
     {
         #region Initialization
-        public IClientMode(void* Base) : base(Base)
-        {
-        }
-
         public IClientMode(IntPtr Base) : base(Base)
         {
         }

@@ -8,10 +8,6 @@ namespace Trion.SDK.Interfaces.Client
     internal unsafe class IGameUI : VMTable
     {
         #region Initializations
-        public IGameUI(void* Base) : base(Base)
-        {
-        }
-
         public IGameUI(IntPtr Base) : base(Base)
         {
         }

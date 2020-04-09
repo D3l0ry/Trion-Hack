@@ -26,7 +26,7 @@ namespace Trion.SDK.Dumpers
             return (void*)*(ulong*)((uint)address + offset);
         }
 
-        public static void* FindPattern(this uint Module,string Pattern,int Offset = 0)
+        public static void* FindPattern(this IntPtr Module,string Pattern,int Offset = 0)
         {
             List<int> Patterns = new List<int>();
 
@@ -46,7 +46,7 @@ namespace Trion.SDK.Dumpers
 
             NativeMethods.GetModuleInformation(NativeMethods.GetCurrentProcess(), (IntPtr)Module, out MODULEINFO MODULEINFO, sizeof(MODULEINFO));
 
-            for(long PIndex = Module; PIndex<MODULEINFO.SizeOfImage;PIndex++)
+            for(long PIndex = (uint)Module; PIndex<MODULEINFO.SizeOfImage;PIndex++)
             {
                 bool Found = true;
 

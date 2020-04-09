@@ -63,7 +63,7 @@ namespace Trion.Client.Menu.Panels
             {
                 BackColor = Color.White,
                 Size = new Size(598, 0),
-                Position = new Point(0, 35),
+                Position = new Point(0, 55),
                 Visible = true
             };
             #endregion

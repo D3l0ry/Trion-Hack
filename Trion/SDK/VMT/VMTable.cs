@@ -7,90 +7,91 @@ using Trion.SDK.WinAPI.Structures;
 
 namespace Trion.SDK.VMT
 {
-    internal unsafe class VMTable
+    internal abstract unsafe class VMTable
     {
         #region Variable
-        private uint** Class_Base;
+        private IntPtr Class_Base;
 
-        private uint* New_VMTable;
-        private uint* Old_VMTable;
+        private IntPtr New_VMTable;
+        private IntPtr Old_VMTable;
 
-        private uint VMTable_Length;
+        private int VMTable_Length;
         #endregion
 
         #region Operator
-        public static implicit operator VMTable(void* Value) => new VMTable(Value);
+        public static implicit operator IntPtr(VMTable Value) => Value.Class_Base;
 
-        public static implicit operator VMTable(IntPtr Value) => new VMTable(Value);
-
-        public static explicit operator IntPtr(VMTable Value) => (IntPtr)Value.Class_Base;
-
-        public static implicit operator void*(VMTable Value) => Value.Class_Base;
+        public static implicit operator void*(VMTable Value) => Value.Class_Base.ToPointer();
         #endregion
 
         #region Initializations
-        protected VMTable(void* Base)
+        protected VMTable(IntPtr Base)
         {
-            if (Base != IntPtr.Zero.ToPointer())
+            if (Base != IntPtr.Zero)
             {
-                Class_Base = (uint**)Base;
+                Class_Base = Base;
             }
 
-            if (Class_Base == IntPtr.Zero.ToPointer())
+            if (Class_Base == IntPtr.Zero)
             {
                 throw new NullReferenceException("Class is NullPtr");
             }
 
-            Old_VMTable = *Class_Base;
+            Old_VMTable = Marshal.ReadIntPtr(Class_Base);
 
-            VMTable_Length = VMTLength(Old_VMTable, sizeof(uint));
+            VMTable_Length = VMTLength(Old_VMTable, 0x4);
 
             if (VMTable_Length == 0)
             {
-                throw new ArgumentNullException("VMTable Length is Null");
+                throw new ArgumentNullException("VMTable Length is zero");
             }
 
-            New_VMTable = (uint*)Marshal.AllocHGlobal((IntPtr)VMTable_Length);
+            New_VMTable = Marshal.AllocHGlobal((IntPtr)VMTable_Length);
 
-            Buffer.MemoryCopy(Old_VMTable, New_VMTable, VMTable_Length, VMTable_Length);
+            Buffer.MemoryCopy(Old_VMTable.ToPointer(), New_VMTable.ToPointer(), VMTable_Length, VMTable_Length);
 
             try
             {
-                Protect(Class_Base, sizeof(uint));
+                Protect(Class_Base, 0x4);
 
-                *Class_Base = New_VMTable;
+                Marshal.WriteIntPtr(Class_Base, New_VMTable);
             }
             catch
             {
-                New_VMTable = (uint*)0;
+                New_VMTable = IntPtr.Zero;
 
                 throw new AggregateException("Error create VMTable");
             }
         }
-
-        protected VMTable(IntPtr Base) : this(Base.ToPointer()) { }
         #endregion
 
         #region Hook Methods
-        public void Hook<T>(int Index, T Funct) => New_VMTable[Index] = (uint)Marshal.GetFunctionPointerForDelegate(Funct);
+        public void Hook<T>(int Index, T Funct) => Marshal.WriteIntPtr(New_VMTable, Index * 0x4, Marshal.GetFunctionPointerForDelegate(Funct));
 
-        public void UnHook(int Index) => New_VMTable[Index] = Old_VMTable[Index];
+        public void UnHook(int Index)
+        {
+            int size = Index * 0x4;
+
+            Marshal.WriteIntPtr(New_VMTable, size, Marshal.ReadIntPtr(Old_VMTable,size));
+        }
         #endregion
 
         #region Call Function Methods
-        protected T CallOriginalFunction<T>(int Index) => Marshal.GetDelegateForFunctionPointer<T>((IntPtr)Old_VMTable[Index]);
+        protected T CallOriginalFunction<T>(int Index) => Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Old_VMTable + (Index * 0x4)));
 
-        protected T CallVirtualFunction<T>(int Index) => Marshal.GetDelegateForFunctionPointer<T>((IntPtr)(*Class_Base)[Index]);
+        protected T CallVirtualFunction<T>(int Index) => Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(New_VMTable + (Index * 0x4)));
 
-        public static T CallVirtualFunction<T>(void* Class, int Index) => Marshal.GetDelegateForFunctionPointer<T>((IntPtr)(*(uint**)Class)[Index]);
+        public static T CallVirtualFunction<T>(IntPtr Class, int Index) => Marshal.GetDelegateForFunctionPointer<T>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(Class) + (Index * 0x4)));
+
+        public static T CallVirtualFunction<T>(void* Class, int Index) => CallVirtualFunction<T>((IntPtr)Class, Index);
         #endregion
 
         #region Helper
-        private uint VMTLength(uint* table, uint size)
+        private int VMTLength(IntPtr table, int size)
         {
-            uint length = 0U;
+            int length = 0;
 
-            while (NativeMethods.VirtualQuery((IntPtr)table[length], out MEMORY_BASIC_INFORMATION MEMORY_INFORMATION, Marshal.SizeOf(typeof(MEMORY_BASIC_INFORMATION))) != 0 && MEMORY_INFORMATION.Protect == AllocationProtect.PAGE_EXECUTE_READ)
+            while (NativeMethods.VirtualQuery(Marshal.ReadIntPtr(table + (length * 0x4)), out MEMORY_BASIC_INFORMATION MEMORY_INFORMATION, Marshal.SizeOf<MEMORY_BASIC_INFORMATION>()) != 0 && MEMORY_INFORMATION.Protect == AllocationProtect.PAGE_EXECUTE_READ)
             {
                 length++;
             }
@@ -98,7 +99,7 @@ namespace Trion.SDK.VMT
             return length * size;
         }
 
-        private bool Protect(void* Base, uint Size, ProtectCode ProtectCode = ProtectCode.PAGE_EXECUTE_READWRITE) => NativeMethods.VirtualProtect((IntPtr)Base, Size, ProtectCode, out uint Old_Protect);
+        private bool Protect(IntPtr Base, uint Size, ProtectCode ProtectCode = ProtectCode.PAGE_EXECUTE_READWRITE) => NativeMethods.VirtualProtect(Base, Size, ProtectCode, out uint Old_Protect);
         #endregion
     }
 }

@@ -89,6 +89,7 @@
   <ItemGroup>
     <Compile Include="Enums\ReturnCode.cs" />
     <Compile Include="LDR.cs" />
+    <Compile Include="NativeMethods.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

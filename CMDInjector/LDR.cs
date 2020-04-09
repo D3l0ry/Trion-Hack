@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text;
 
 using NativeManager.MemoryInteraction;
-using NativeManager.WinApi;
 
 using CMDInjector.Enums;
 
@@ -53,7 +52,7 @@ namespace CMDInjector
                 return ReturnCode.WRITE_LIBRARY_ERROR;
             }
 
-            if (!MemoryManager.GetExecutor().Execute(Kernel32.GetProcAddress(Kernel32.GetModuleHandle("kernel32.dll"), "LoadLibraryA"), AllocationMemory))
+            if (!MemoryManager.GetExecutor().Execute(NativeMethods.GetProcAddress(NativeMethods.GetModuleHandle("kernel32.dll"), "LoadLibraryA"), AllocationMemory))
             {
                 return ReturnCode.INJECTING_ERROR;
             }
@@ -63,7 +62,13 @@ namespace CMDInjector
             ProcessModule ProcessModule = MemoryManager.GetProcessInfo().GetModule(DllInfo.Name);
             if (ProcessModule != null)
             {
-                if (!MemoryManager.GetExecutor().Execute(Kernel32.GetProcAddress(ProcessModule.BaseAddress, ExportName), IntPtr.Zero))
+                IntPtr ProcAddress = NativeMethods.GetProcAddress(ProcessModule.BaseAddress, ExportName);
+                if (ProcAddress == IntPtr.Zero)
+                {
+                    return ReturnCode.EXPORT_FUNCTION_ERROR;
+                }
+
+                if (!MemoryManager.GetExecutor().Execute(ProcAddress, IntPtr.Zero))
                 {
                     return ReturnCode.EXPORT_FUNCTION_ERROR;
                 }

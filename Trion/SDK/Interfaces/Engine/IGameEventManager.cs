@@ -7,24 +7,14 @@ namespace Trion.SDK.Interfaces.Engine
 {
     internal unsafe class IGameEventManager : VMTable
     {
-        #region Initializations
-        public IGameEventManager(IntPtr Base) : base(Base)
-        {
-        }
-        #endregion
-
-        #region Delegates
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate bool FireEventClientSideHookDelegate(ref GameEvent Event);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         public delegate bool FireEventClientSideOriginalDelegate(IntPtr Class, ref GameEvent Event);
-        #endregion
 
-        #region Structures
         public struct GameEvent
         {
-            #region Delegates
             [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
             private delegate IntPtr GetNameDelegate(void* Class);
 
@@ -33,9 +23,7 @@ namespace Trion.SDK.Interfaces.Engine
 
             [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
             private delegate IntPtr GetStringDelegate(void* Class, string Key, string Index);
-            #endregion
 
-            #region Virtual Methods
             public string GetName()
             {
                 fixed (void* StructPtr = &this)
@@ -67,12 +55,10 @@ namespace Trion.SDK.Interfaces.Engine
                     CallVirtualFunction<GetStringDelegate>(StructPtr, 16)(StructPtr, Key, Value);
                 }
             }
-            #endregion
         }
-        #endregion
 
-        #region Methods
-        public bool FireEventClientSideOriginal(ref GameEvent Event) => CallOriginalFunction<FireEventClientSideOriginalDelegate>(9)(this, ref Event);
-        #endregion
+        public IGameEventManager(IntPtr Base) : base(Base) { }
+
+        public bool FireEventClientSideOriginal(ref GameEvent Event) => CallOriginalFunction<FireEventClientSideOriginalDelegate>(9)(Address, ref Event);
     }
 }

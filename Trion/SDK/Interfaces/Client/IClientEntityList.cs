@@ -19,10 +19,10 @@ namespace Trion.SDK.Interfaces.Client
 
         public IClientEntityList(IntPtr Base) : base(Base) { }
 
-        public ref IClientEntity GetClientEntity(int Index) => ref CallVirtualFunction<GetClientEntityDelegate>(3)(this, Index);
+        public ref IClientEntity GetClientEntity(int Index) => ref CallVirtualFunction<GetClientEntityDelegate>(3)(Address, Index);
 
-        public ref IClientEntity GetClientEntityFromHandle(IntPtr Handle) => ref CallVirtualFunction<GetClientEntityFromHandleDelegate>(4)(this, Handle);
+        public ref IClientEntity GetClientEntityFromHandle(IntPtr Handle) => ref CallVirtualFunction<GetClientEntityFromHandleDelegate>(4)(Address, Handle);
 
-        public int GetHighestEntityIndex => CallVirtualFunction<GetHighestEntityIndexDelegate>(6)(this);
+        public int GetHighestEntityIndex => CallVirtualFunction<GetHighestEntityIndexDelegate>(6)(Address);
     }
 }

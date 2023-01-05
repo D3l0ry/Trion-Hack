@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 using Trion.SDK.Interfaces;
 
@@ -19,19 +17,13 @@ namespace Trion
         //.vtentry 1 : 1
         //.export[1]
         //7)После всего можешь скомпилировать файл следующей командой(Твой путь может отличаться от моего)
-        //ilasm /OUT:"P:\Trion Compilation\Internal\test.dll" "P:\Trion Compilation\Internal\test.il" /dll
+        //ilasm /OUT:"D:\Trion Compilation\test.dll" "D:\Trion Compilation\test.il" /dll
         public static bool DllMain()
         {
-            Interface.Panel.Hook(41, Hooks.PaintTraverseDelegate);
-            Interface.ClientMode.Hook(24, Hooks.CreateMoveDelegate);
-            Interface.ClientMode.Hook(35, Hooks.GetViewModelFovDelegate);
             Interface.GameEventManager.Hook(9, Hooks.FireEventClientSideDelegate);
             Interface.BaseClientDLL.Hook(37, Hooks.FrameStageNotifyDelegate);
-            Interface.ClientMode.Hook(44, Hooks.DoPostScreenEffectsDelegate);
             Interface.NetVar.HookProp("DT_BaseViewModel", "m_nSequence", Hooks.SetViewModelSequenceDelegate, ref Interface.NetVar.SequencePtr);
-            Interface.Surface.Hook(67, Hooks.LockCursorDelegate);
 
-            Interface.GameUI.MessageBox("Запущено успешно", "Библиотека успешно запущена");
             Console.Beep();
 
             return true;

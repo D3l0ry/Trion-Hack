@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-using Trion.SDK.VirtualMemory;
 using Trion.SDK.WinAPI;
 using Trion.SDK.WinAPI.Enums;
 using Trion.SDK.WinAPI.Structures;
@@ -11,30 +10,19 @@ namespace Trion.SDK.VMT
     internal abstract unsafe class VMTable
     {
         private readonly IntPtr m_ClassBase;
-
         private readonly IntPtr m_NewVmTable;
         private readonly IntPtr m_OldVmTable;
-
         private readonly int m_VmTableLength;
-
-        public static implicit operator IntPtr(VMTable value) => value.m_ClassBase;
-
-        public static implicit operator void*(VMTable value) => value.m_ClassBase.ToPointer();
 
         protected VMTable(IntPtr classPtr)
         {
-            if (classPtr != IntPtr.Zero)
+            if (classPtr == IntPtr.Zero)
             {
-                m_ClassBase = classPtr;
+                throw new NullReferenceException("Class is Null Ptr");
             }
 
-            if (m_ClassBase == IntPtr.Zero)
-            {
-                throw new NullReferenceException("Class is NullPtr");
-            }
-
-            m_OldVmTable = m_ClassBase.Read<IntPtr>();
-
+            m_ClassBase = classPtr;
+            m_OldVmTable = *(IntPtr*)classPtr;
             m_VmTableLength = VMTLength(m_OldVmTable, 0x4);
 
             if (m_VmTableLength == 0)
@@ -46,25 +34,27 @@ namespace Trion.SDK.VMT
 
             Buffer.MemoryCopy(m_OldVmTable.ToPointer(), m_NewVmTable.ToPointer(), m_VmTableLength, m_VmTableLength);
 
-            Protect(m_ClassBase, 0x4);
+            NativeMethods.VirtualProtect(m_ClassBase, 0x4, ProtectCode.PAGE_EXECUTE_READWRITE, out uint _);
 
-            m_ClassBase.Write(m_NewVmTable);
+            *(IntPtr*)m_ClassBase = m_NewVmTable;
         }
 
-        public void Hook<T>(int index, T funct) => m_NewVmTable.Write(index * 0x4, Marshal.GetFunctionPointerForDelegate(funct));
+        public IntPtr Address => m_ClassBase;
+
+        public void Hook<T>(int index, T func) => *(IntPtr*)(m_NewVmTable + (index * 0x4)) = Marshal.GetFunctionPointerForDelegate(func);
 
         public void UnHook(int index)
         {
             int size = index * 0x4;
 
-            m_NewVmTable.Write(size, Marshal.ReadIntPtr(m_OldVmTable, size));
+            *(IntPtr*)(m_NewVmTable + size) = *(IntPtr*)(m_OldVmTable + size);
         }
 
-        protected T CallOriginalFunction<T>(int index) => Marshal.GetDelegateForFunctionPointer<T>((m_OldVmTable + (index * 0x4)).Read<IntPtr>());
+        protected T CallOriginalFunction<T>(int index) => Marshal.GetDelegateForFunctionPointer<T>(*(IntPtr*)(m_OldVmTable + (index * 0x4)));
 
-        protected T CallVirtualFunction<T>(int index) => Marshal.GetDelegateForFunctionPointer<T>((m_NewVmTable + (index * 0x4)).Read<IntPtr>());
+        protected T CallVirtualFunction<T>(int index) => Marshal.GetDelegateForFunctionPointer<T>(*(IntPtr*)(m_NewVmTable + (index * 0x4)));
 
-        public static T CallVirtualFunction<T>(IntPtr classPtr, int index) => Marshal.GetDelegateForFunctionPointer<T>((classPtr.Read<IntPtr>() + (index * 0x4)).Read<IntPtr>());
+        public static T CallVirtualFunction<T>(IntPtr classPtr, int index) => Marshal.GetDelegateForFunctionPointer<T>(*(IntPtr*)(*(IntPtr*)classPtr + (index * 0x4)));
 
         public static T CallVirtualFunction<T>(void* classPtr, int index) => CallVirtualFunction<T>((IntPtr)classPtr, index);
 
@@ -72,14 +62,12 @@ namespace Trion.SDK.VMT
         {
             int length = 0;
 
-            while (NativeMethods.VirtualQuery((table + (length * 0x4)).Read<IntPtr>(), out MEMORY_BASIC_INFORMATION MEMORY_INFORMATION, Marshal.SizeOf<MEMORY_BASIC_INFORMATION>()) != 0 && MEMORY_INFORMATION.Protect == AllocationProtect.PAGE_EXECUTE_READ)
+            while (NativeMethods.VirtualQuery(*(IntPtr*)(table + (length * 0x4)), out MEMORY_BASIC_INFORMATION MEMORY_INFORMATION, Marshal.SizeOf<MEMORY_BASIC_INFORMATION>()) != 0 && MEMORY_INFORMATION.Protect == AllocationProtect.PAGE_EXECUTE_READ)
             {
                 length++;
             }
 
             return length * size;
         }
-
-        private bool Protect(IntPtr address, uint Size, ProtectCode ProtectCode = ProtectCode.PAGE_EXECUTE_READWRITE) => NativeMethods.VirtualProtect(address, Size, ProtectCode, out uint Old_Protect);
     }
 }

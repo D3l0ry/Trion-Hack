@@ -1,6 +1,6 @@
 ﻿using System;
 
-using static Trion.SDK.Interfaces.Client.Entity.Structures.BaseCombatWeapon;
+using Trion.SDK.Enums;
 
 namespace Trion.SDK.Structures
 {

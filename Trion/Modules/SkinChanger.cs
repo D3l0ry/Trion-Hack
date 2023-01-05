@@ -3,18 +3,16 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 using Trion.Client.Configs;
+using Trion.SDK.Enums;
 using Trion.SDK.Interfaces;
-using Trion.SDK.Interfaces.Client;
 using Trion.SDK.Interfaces.Client.Entity;
 using Trion.SDK.Interfaces.Client.Entity.Structures;
 using Trion.SDK.Interfaces.Engine;
 using Trion.SDK.Structures;
 
-using static Trion.SDK.Interfaces.Client.Entity.Structures.BaseCombatWeapon;
-
 namespace Trion.Modules
 {
-    internal unsafe struct SkinChanger
+    internal unsafe class SkinChanger
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void MakeGloveDelegate(int entry, int serial);
@@ -120,102 +118,102 @@ namespace Trion.Modules
             SEQUENCE_BOWIE_IDLE1 = 1,
         };
 
-        public static void OnFrameStage(ref BasePlayer localPlayer)
+        public static void OnFrameStage(BasePlayer* localPlayer)
         {
-            if (!localPlayer.IsAlive)
+            if (!localPlayer->IsAlive)
             {
                 return;
             }
 
-            Interface.VEngineClient.GetPlayerInfo(Interface.VEngineClient.GetLocalPlayer, out IVEngineClient.PlayerInfo PlayerInfo);
+            Interface.VEngineClient.GetPlayerInfo(Interface.VEngineClient.GetLocalPlayer, out PlayerInfo PlayerInfo);
 
             for (int Index = 0; Index < 8; Index++)
             {
-                ref BaseCombatWeapon Weapon = ref localPlayer.GetMyWeapons(Index);
+                BaseCombatWeapon* Weapon = localPlayer->GetMyWeapons(Index);
 
-                if (Weapon.IsNull)
+                if (Weapon->IsNull)
                 {
                     continue;
                 }
 
-                if (Weapon.OriginalOwnerXuidLow != PlayerInfo.m_nXuidLow)
+                if (Weapon->OriginalOwnerXuidLow != PlayerInfo.m_nXuidLow)
                 {
                     continue;
                 }
 
-                if (Weapon.OriginalOwnerXuidHigh != PlayerInfo.m_nXuidHigh)
+                if (Weapon->OriginalOwnerXuidHigh != PlayerInfo.m_nXuidHigh)
                 {
                     continue;
                 }
 
-                CSkinChangerWeapon WeaponId = ConfigManager.CSkinChangerWeapons[Weapon.ItemDefinitionIndex.GetWeaponId()];
+                CSkinChangerWeapon WeaponId = ConfigManager.CSkinChangerWeapons[Weapon->ItemDefinitionIndex.GetWeaponId()];
 
-                ApplyWeapon(ref Weapon, WeaponId, PlayerInfo);
+                ApplyWeapon(Weapon, WeaponId, PlayerInfo);
             }
 
-            ApplyKnife(ref localPlayer, ref ConfigManager.CSkinChangerWeapons[35]);
+            //ApplyKnife(localPlayer, ref ConfigManager.CSkinChangerWeapons[35]);
 
-            ApplyWearable(ref localPlayer, ref ConfigManager.CSkinChangerWeapons[36], PlayerInfo);
+            //ApplyWearable(localPlayer, ref ConfigManager.CSkinChangerWeapons[36], PlayerInfo);
         }
 
-        private static void ApplyWeapon(ref BaseCombatWeapon weaponPtr, CSkinChangerWeapon configWeapon, IVEngineClient.PlayerInfo playerInfo)
+        private static void ApplyWeapon(BaseCombatWeapon* weaponPtr, CSkinChangerWeapon configWeapon, PlayerInfo playerInfo)
         {
             if (configWeapon.WeaponID == WeaponId.None)
             {
                 return;
             }
 
-            weaponPtr.ItemIdHigh = -1;
+            weaponPtr->ItemIdHigh = -1;
 
-            weaponPtr.AccountId = playerInfo.m_nXuidLow;
+            weaponPtr->AccountId = playerInfo.m_nXuidLow;
 
             if (!string.IsNullOrWhiteSpace(configWeapon.WeaponName))
             {
-                weaponPtr.CustomName = configWeapon.WeaponName;
+                weaponPtr->CustomName = configWeapon.WeaponName;
             }
 
             if (configWeapon.StatTrackEnable && configWeapon.StatTrack >= 0)
             {
-                weaponPtr.EntityQuality = QualityId.Strange;
-                weaponPtr.FallBackStatTrack = configWeapon.StatTrack;
+                weaponPtr->EntityQuality = QualityId.Strange;
+                weaponPtr->FallBackStatTrack = configWeapon.StatTrack;
             }
 
-            weaponPtr.FallBackPaintKit = configWeapon.SkinID;
+            weaponPtr->FallBackPaintKit = configWeapon.SkinID;
 
-            WeaponId WeaponIndex = weaponPtr.ItemDefinitionIndex;
+            WeaponId WeaponIndex = weaponPtr->ItemDefinitionIndex;
 
             if (WeaponIndex.IsKnife() && WeaponIndex != configWeapon.WeaponID)
             {
-                weaponPtr.ItemDefinitionIndex = configWeapon.WeaponID;
-                weaponPtr.GetViewModel.SetModelIndex(Interface.ModelInfoClient.GetModelIndex(KnifeModel[weaponPtr.ItemDefinitionIndex]));
+                weaponPtr->ItemDefinitionIndex = configWeapon.WeaponID;
+                weaponPtr->GetViewModel.SetModelIndex(Interface.ModelInfoClient.GetModelIndex(KnifeModel[weaponPtr->ItemDefinitionIndex]));
             }
         }
 
-        private static void ApplyKnife(ref BasePlayer localPlayer, ref CSkinChangerWeapon configWeapon)
+        private static void ApplyKnife(BasePlayer* localPlayer, ref CSkinChangerWeapon configWeapon)
         {
             if (configWeapon.WeaponID == WeaponId.None)
             {
                 return;
             }
 
-            WeaponId ActiveIndex = localPlayer.GetActiveWeapon->ItemDefinitionIndex;
+            WeaponId ActiveIndex = localPlayer->GetActiveWeapon.ItemDefinitionIndex;
 
             if (ActiveIndex.IsKnife())
             {
-                localPlayer.GetViewModel.SetModelIndex(Interface.ModelInfoClient.GetModelIndex(KnifeModel[ActiveIndex]));
+                localPlayer->GetViewModel->SetModelIndex(Interface.ModelInfoClient.GetModelIndex(KnifeModel[ActiveIndex]));
             }
         }
 
-        private static void ApplyWearable(ref BasePlayer localPlayer, ref CSkinChangerWeapon configWeapon, IVEngineClient.PlayerInfo playerInfo)
+        private static void ApplyWearable(BasePlayer* localPlayer, ref CSkinChangerWeapon configWeapon, PlayerInfo playerInfo)
         {
-            uint* wearables = localPlayer.GetMyWearables;
+            uint* wearables = localPlayer->GetMyWearables;
 
             if (wearables == null)
             {
                 return;
             }
 
-            IBaseClientDLL.ClientClass* Class = Interface.BaseClientDLL.GetAllClasses();
+            ClientClass* Class = Interface.BaseClientDLL.GetAllClasses();
 
             if (Class == null)
             {
@@ -234,7 +232,7 @@ namespace Trion.Modules
             {
                 while (Class != null)
                 {
-                    if (Class->ClassId == IBaseClientDLL.ClassId.CEconWearable)
+                    if (Class->ClassId == ClassId.CEconWearable)
                     {
                         break;
                     }
@@ -248,35 +246,35 @@ namespace Trion.Modules
             }
 
             ref IClientEntity clientEntity = ref Interface.ClientEntityList.GetClientEntityFromHandle((IntPtr)wearables[0]);
-            ref BaseCombatWeapon glove = ref clientEntity.GetWeapon;
+            BaseCombatWeapon* glove = clientEntity.GetWeapon;
 
-            if (glove.IsNull)
+            if (glove->IsNull)
             {
                 return;
             }
 
-            if (glove.ItemDefinitionIndex != configWeapon.WeaponID)
+            if (glove->ItemDefinitionIndex != configWeapon.WeaponID)
             {
-                glove.ItemIdHigh = -1;
-                glove.AccountId = playerInfo.m_nXuidLow;
+                glove->ItemIdHigh = -1;
+                glove->AccountId = playerInfo.m_nXuidLow;
 
-                glove.ItemDefinitionIndex = configWeapon.WeaponID;
-                ref BaseViewModel viewModel = ref clientEntity.GetViewModel;
+                glove->ItemDefinitionIndex = configWeapon.WeaponID;
+                BaseViewModel* viewModel = clientEntity.GetViewModel;
 
-                viewModel.SetModelIndex(Interface.ModelInfoClient.GetModelIndex(GloveModel[glove.ItemDefinitionIndex]));
+                viewModel->SetModelIndex(Interface.ModelInfoClient.GetModelIndex(GloveModel[glove->ItemDefinitionIndex]));
 
-                glove.EntityQuality = QualityId.Normal;
-                glove.FallBackPaintKit = configWeapon.SkinID;
+                glove->EntityQuality = QualityId.Normal;
+                glove->FallBackPaintKit = configWeapon.SkinID;
 
-                clientEntity.GetClientNetworkable.PreDataUpdate(0);
+                clientEntity.GetClientNetworkable->PreDataUpdate(0);
             }
         }
 
-        public static void ApplyKillIcon(ref IGameEventManager.GameEvent gameEvent, ref BasePlayer localPlayer)
+        public static void ApplyKillIcon(ref IGameEventManager.GameEvent gameEvent, BasePlayer* localPlayer)
         {
             string Weapon = gameEvent.GetString("weapon");
 
-            WeaponId WeaponIndex = localPlayer.GetActiveWeapon->ItemDefinitionIndex;
+            WeaponId WeaponIndex = localPlayer->GetActiveWeapon.ItemDefinitionIndex;
 
             if (WeaponIndex.IsKnife())
             {
@@ -292,19 +290,23 @@ namespace Trion.Modules
             }
         }
 
-        public static void ApplyStatTrack(ref IGameEventManager.GameEvent gameEvent, ref BasePlayer localPlayer)
+        public static void ApplyStatTrack(ref IGameEventManager.GameEvent gameEvent, BasePlayer* localPlayer)
         {
-            BaseCombatWeapon* WeaponIndex = localPlayer.GetActiveWeapon;
-            uint WeaponId = WeaponIndex->ItemDefinitionIndex.GetWeaponId();
-            ref IClientNetworkable ClientNetworkable = ref ((IClientEntity*)WeaponIndex)->GetClientNetworkable;
+            ref BaseCombatWeapon WeaponIndex = ref localPlayer->GetActiveWeapon;
+            uint WeaponId = WeaponIndex.ItemDefinitionIndex.GetWeaponId();
 
-            ref CSkinChangerWeapon Weapon = ref ConfigManager.CSkinChangerWeapons[WeaponId];
-
-            if (Weapon.StatTrackEnable)
+            fixed (void* weaponPtr = &WeaponIndex)
             {
-                WeaponIndex->FallBackStatTrack = ++Weapon.StatTrack;
+                IClientNetworkable* ClientNetworkable = ((IClientEntity*)weaponPtr)->GetClientNetworkable;
 
-                ClientNetworkable.PostDataUpdate(0);
+                ref CSkinChangerWeapon Weapon = ref ConfigManager.CSkinChangerWeapons[WeaponId];
+
+                if (Weapon.StatTrackEnable)
+                {
+                    WeaponIndex.FallBackStatTrack = ++Weapon.StatTrack;
+
+                    ClientNetworkable->PostDataUpdate(0);
+                }
             }
         }
 

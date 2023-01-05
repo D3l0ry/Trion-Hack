@@ -18,10 +18,10 @@ namespace Trion.SDK.Interfaces.Engine
 
         public IVModelInfoClient(IntPtr Base) : base(Base) { }
 
-        public IntPtr GetModel(int Index) => CallVirtualFunction<GetModelDelegate>(1)(this, Index);
+        public IntPtr GetModel(int Index) => CallVirtualFunction<GetModelDelegate>(1)(Address, Index);
 
-        public int GetModelIndex(string Name) => CallVirtualFunction<GetModelIndexDelegate>(2)(this, Name);
+        public int GetModelIndex(string Name) => CallVirtualFunction<GetModelIndexDelegate>(2)(Address, Name);
 
-        public string GetModelName(IntPtr Model) => Marshal.PtrToStringAnsi(CallVirtualFunction<GetModelNameDelegate>(3)(this, Model));
+        public string GetModelName(IntPtr Model) => Marshal.PtrToStringAnsi(CallVirtualFunction<GetModelNameDelegate>(3)(Address, Model));
     }
 }

@@ -7,29 +7,21 @@ namespace Trion.SDK.Interfaces.Engine
 {
     internal unsafe class IVModelInfoClient : VMTable
     {
-        #region Initialization
-        public IVModelInfoClient(IntPtr Base) : base(Base)
-        {
-        }
-        #endregion
-
-        #region Delegates
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate void* GetModelDelegate(void* Class, int Index);
+        private delegate IntPtr GetModelDelegate(IntPtr Class, int Index);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate int GetModelIndexDelegate(void* Class, [MarshalAs(UnmanagedType.LPStr)]string Name);
+        private delegate int GetModelIndexDelegate(IntPtr Class, [MarshalAs(UnmanagedType.LPStr)] string Name);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate void* GetModelNameDelegate(void* Class, void* Model);
-        #endregion
+        private delegate IntPtr GetModelNameDelegate(IntPtr Class, IntPtr Model);
 
-        #region Virtual Methods
-        public void* GetModel(int Index) => CallVirtualFunction<GetModelDelegate>(1)(this, Index);
+        public IVModelInfoClient(IntPtr Base) : base(Base) { }
 
-        public int GetModelIndex(string Name) => CallVirtualFunction<GetModelIndexDelegate>(2)(this, Name);
+        public IntPtr GetModel(int Index) => CallVirtualFunction<GetModelDelegate>(1)(Address, Index);
 
-        public string GetModelName(void* Model) => Marshal.PtrToStringAnsi((IntPtr)CallVirtualFunction<GetModelNameDelegate>(3)(this, Model));
-        #endregion
+        public int GetModelIndex(string Name) => CallVirtualFunction<GetModelIndexDelegate>(2)(Address, Name);
+
+        public string GetModelName(IntPtr Model) => Marshal.PtrToStringAnsi(CallVirtualFunction<GetModelNameDelegate>(3)(Address, Model));
     }
 }

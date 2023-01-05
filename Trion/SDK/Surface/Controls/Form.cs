@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Drawing;
+using System.Linq;
 
 using Trion.SDK.Interfaces;
 
@@ -8,117 +8,105 @@ namespace Trion.SDK.Surface.Controls
 {
     internal class Form : Control
     {
-        #region Variables
         public readonly List<Control> Controls = new List<Control>();
-        #endregion
 
-        #region Indexer
-        public Control this[int Index]
+        public Control this[string name]
         {
-            get => Controls[Index];
-            set => Controls.Add(value);
-        }
-
-        public Control this[string Name]
-        {
-            get
-            {
-                foreach (Control Control in Controls)
-                {
-                    if (Control.Name == Name)
-                    {
-                        return Control;
-                    }
-                }
-
-                return null;
-            }
+            get => Controls.Where(X => X.Name == name).FirstOrDefault();
             set
             {
-                if (string.IsNullOrWhiteSpace(value.Name))
+                if (!string.IsNullOrWhiteSpace(value.Name))
                 {
-                    value.Name = Name;
+                    value.Name = name;
                 }
 
-                value.Position.X += Position.X;
-                value.Position.Y += Position.Y;
+                Point position = value.Position;
+                position.X += Position.X;
+                position.Y += Position.Y;
+
+                value.Position = position;
 
                 Controls.Add(value);
             }
         }
 
-        public Control this[string Name, string Text]
+        public Control this[string name, string text]
         {
             set
             {
-                if (string.IsNullOrWhiteSpace(value.Name))
+                if (!string.IsNullOrWhiteSpace(value.Name))
                 {
-                    value.Name = Name;
-                }
-                if (string.IsNullOrWhiteSpace(value.Text))
-                {
-                    value.Text = Text;
+                    value.Name = name;
                 }
 
-                value.Position.X += Position.X;
-                value.Position.Y += Position.Y;
+                if (!string.IsNullOrWhiteSpace(value.Text))
+                {
+                    value.Text = text;
+                }
+
+                Point position = value.Position;
+                position.X += Position.X;
+                position.Y += Position.Y;
+
+                value.Position = position;
 
                 Controls.Add(value);
             }
         }
 
-        public Control this[string Name, bool IsPanel]
+        public Control this[string name, bool isPanel]
         {
             set
             {
-                if (string.IsNullOrWhiteSpace(value.Name))
+                if (!string.IsNullOrWhiteSpace(value.Name))
                 {
-                    value.Name = Name;
+                    value.Name = name;
                 }
 
                 Controls.Add(value);
             }
         }
-        #endregion
 
-        #region Public Methods
         public override void Show()
         {
-            if (Visible)
+            if (!Visible)
             {
-                Interface.Surface.SetDrawColor(BackColor);
-                Interface.Surface.SetDrawFilledRect(Position.X, Position.Y, Position.X + Size.Width, Position.Y + Size.Height);
-
-                if (!string.IsNullOrWhiteSpace(Text))
-                {
-                    Interface.Surface.GetTextSize(Font.Id, Text, out int TextWidth, out int TextHeight);
-
-                    Interface.Surface.SetDrawColor(Color.FromArgb(25, 30, 37));
-                    Interface.Surface.SetDrawFilledRect(Position.X, Position.Y, Position.X + Size.Width, Position.Y + TextHeight + 10);
-
-                    Interface.Surface.SetTextColor(ForeColor);
-                    Interface.Surface.SetTextFont(Font.Id);
-                    Interface.Surface.SetTextPosition(Position.X + (Size.Width / 2) - (TextWidth / 2), Position.Y + 5);
-
-                    Interface.Surface.PrintText(Text);
-                }
-
-                if (Controls.Count > 0)
-                {
-                    foreach (Control Element in Controls)
-                    {
-                        if (Element.Visible)
-                        {
-                            Element.Show();
-                        }
-                    }
-                }
-
-                MouseEvent();
+                return;
             }
+
+            Interface.Surface.SetDrawColor(BackColor);
+            Interface.Surface.SetDrawFilledRect(Position.X, Position.Y, Position.X + Size.Width, Position.Y + Size.Height);
+
+            if (!string.IsNullOrWhiteSpace(Text))
+            {
+                Interface.Surface.GetTextSize(Font.Id, Text, out int textWidth, out int textHeight);
+
+                Interface.Surface.SetDrawColor(Color.FromArgb(25, 30, 37));
+                Interface.Surface.SetDrawFilledRect(Position.X, Position.Y, Position.X + Size.Width, Position.Y + textHeight + 10);
+
+                Interface.Surface.SetTextColor(ForeColor);
+                Interface.Surface.SetTextFont(Font.Id);
+                Interface.Surface.SetTextPosition(Position.X + (Size.Width / 2) - (textWidth / 2), Position.Y + 5);
+
+                Interface.Surface.PrintText(Text);
+            }
+
+            if (Controls.Count > 0)
+            {
+                foreach (Control element in Controls)
+                {
+                    if (!element.Visible)
+                    {
+                        continue;
+                    }
+
+                    element.Show();
+                }
+            }
+
+            MouseEvent();
 
             KeyEvent(WinAPI.Enums.KeyCode.VK_HOME);
         }
-        #endregion
     }
 }

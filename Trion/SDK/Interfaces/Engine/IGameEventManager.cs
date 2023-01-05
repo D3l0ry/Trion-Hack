@@ -18,7 +18,7 @@ namespace Trion.SDK.Interfaces.Engine
         public delegate bool FireEventClientSideHookDelegate(ref GameEvent Event);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        public delegate bool FireEventClientSideOriginalDelegate(void* Class, ref GameEvent Event);
+        public delegate bool FireEventClientSideOriginalDelegate(IntPtr Class, ref GameEvent Event);
         #endregion
 
         #region Structures
@@ -26,13 +26,13 @@ namespace Trion.SDK.Interfaces.Engine
         {
             #region Delegates
             [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-            private delegate void* GetNameDelegate(void* Class);
+            private delegate IntPtr GetNameDelegate(void* Class);
 
             [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
             private delegate int GetIntDelegate(void* Class, string Key, int Index);
 
             [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-            private delegate void* GetStringDelegate(void* Class, string Key, string Index);
+            private delegate IntPtr GetStringDelegate(void* Class, string Key, string Index);
             #endregion
 
             #region Virtual Methods
@@ -40,7 +40,7 @@ namespace Trion.SDK.Interfaces.Engine
             {
                 fixed (void* StructPtr = &this)
                 {
-                    return Marshal.PtrToStringAnsi((IntPtr)CallVirtualFunction<GetNameDelegate>(StructPtr, 1)(StructPtr));
+                    return Marshal.PtrToStringAnsi(CallVirtualFunction<GetNameDelegate>(StructPtr, 1)(StructPtr));
                 }
             }
 
@@ -56,7 +56,7 @@ namespace Trion.SDK.Interfaces.Engine
             {
                 fixed (void* StructPtr = &this)
                 {
-                    return Marshal.PtrToStringAnsi((IntPtr)CallVirtualFunction<GetStringDelegate>(StructPtr, 9)(StructPtr, Key, ""));
+                    return Marshal.PtrToStringAnsi(CallVirtualFunction<GetStringDelegate>(StructPtr, 9)(StructPtr, Key, ""));
                 }
             }
 

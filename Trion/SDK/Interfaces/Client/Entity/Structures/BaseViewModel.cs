@@ -1,17 +1,16 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
+using Trion.SDK.VirtualMemory;
 using Trion.SDK.VMT;
 
 namespace Trion.SDK.Interfaces.Client.Entity.Structures
 {
     internal unsafe struct BaseViewModel
     {
-        #region Delegates
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate void SetModelIndexDelegate(void* Class, int Index);
-        #endregion
 
-        #region Virtual
         public void SetModelIndex(int Index)
         {
             fixed (void* Class = &this)
@@ -19,15 +18,14 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
                 VMTable.CallVirtualFunction<SetModelIndexDelegate>(Class, 75)(Class, Index);
             }
         }
-        #endregion
 
-        public IClientEntity* GetOwner
+        public ref IClientEntity GetOwner
         {
             get
             {
                 fixed (void* Class = &this)
                 {
-                    return Interface.ClientEntityList.GetClientEntityFromHandle(*(int**)((uint)Class + Interface.NetVar["DT_BaseViewModel", "m_hOwner"]));
+                    return ref Interface.ClientEntityList.GetClientEntityFromHandle(MemoryManager.Read<IntPtr>(Class, Interface.NetVar["DT_BaseViewModel", "m_hOwner"]));
                 }
             }
         }
@@ -38,14 +36,14 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             {
                 fixed (void* Class = &this)
                 {
-                    return *(int*)((uint)Class + Interface.NetVar["DT_BaseViewModel", "m_nModelIndex"]);
+                    return MemoryManager.Read<int>(Class, Interface.NetVar["DT_BaseViewModel", "m_nModelIndex"]);
                 }
             }
             set
             {
                 fixed (void* Class = &this)
                 {
-                    *(int*)((uint)Class + Interface.NetVar["DT_BaseViewModel", "m_nModelIndex"]) = value;
+                    MemoryManager.Write(Class, Interface.NetVar["DT_BaseViewModel", "m_nModelIndex"], value);
                 }
             }
         }

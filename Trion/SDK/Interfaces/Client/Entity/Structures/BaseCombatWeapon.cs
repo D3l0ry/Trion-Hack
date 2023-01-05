@@ -3,9 +3,8 @@ using System.Runtime.InteropServices;
 
 namespace Trion.SDK.Interfaces.Client.Entity.Structures
 {
-    internal unsafe ref struct BaseCombatWeapon
+    internal unsafe struct BaseCombatWeapon
     {
-        #region Enums
         public enum WeaponId : short
         {
             None,
@@ -94,7 +93,6 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
             Completed = 11,
             Tournament
         }
-        #endregion
 
         public WeaponId ItemDefinitionIndex
         {
@@ -297,6 +295,28 @@ namespace Trion.SDK.Interfaces.Client.Entity.Structures
                 fixed (void* Class = &this)
                 {
                     *(int*)((uint)Class + Interface.NetVar["DT_BaseEntity", "m_nModelIndex"]) = value;
+                }
+            }
+        }
+
+        public ref BaseViewModel GetViewModel
+        {
+            get
+            {
+                fixed (void* classPtr = &this)
+                {
+                    return ref *(BaseViewModel*)classPtr;
+                }
+            }
+        }
+
+        public bool IsNull
+        {
+            get
+            {
+                fixed (void* classPtr = &this)
+                {
+                    return classPtr == null;
                 }
             }
         }

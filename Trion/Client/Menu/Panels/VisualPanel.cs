@@ -1,5 +1,5 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
+
 using Trion.Client.Configs;
 using Trion.SDK.Surface;
 using Trion.SDK.Surface.Controls;

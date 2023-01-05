@@ -2,35 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Configurations>Debug;Release;Trion</Configurations>
-    <Platforms>AnyCPU;x86</Platforms>
-    <Authors>Trion Project</Authors>
+    <Configurations>Debug;Release</Configurations>
+    <Platforms>x86</Platforms>
+    <Authors>D3l0ry</Authors>
     <Description>DLC for CS:GO</Description>
-    <PackageProjectUrl>Trion.ru</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <AssemblyVersion>1.37.3.5</AssemblyVersion>
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants />
-    <PlatformTarget>x86</PlatformTarget>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Trion|x86'">
-    <DefineConstants></DefineConstants>
-    <Optimize>false</Optimize>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <OutputPath>P:\Trion Compilation\Internal\</OutputPath>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-    <BaseAddress>285212672</BaseAddress>
-    <DebugType>none</DebugType>
-    <DebugSymbols>false</DebugSymbols>
-    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
@@ -41,23 +21,13 @@
     <DebugSymbols>false</DebugSymbols>
     <ErrorReport>prompt</ErrorReport>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-    <Optimize>true</Optimize>
-    <OutputPath>P:\Trion Compilation\Internal\</OutputPath>
+    <Optimize>True</Optimize>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Client\Site\**" />
-    <Compile Remove="Client\Новая папка\**" />
-    <Compile Remove="SDK\Serializers\**" />
-    <Compile Remove="SDK\Web\**" />
-    <EmbeddedResource Remove="Client\Site\**" />
-    <EmbeddedResource Remove="Client\Новая папка\**" />
-    <EmbeddedResource Remove="SDK\Serializers\**" />
-    <EmbeddedResource Remove="SDK\Web\**" />
-    <None Remove="Client\Site\**" />
-    <None Remove="Client\Новая папка\**" />
-    <None Remove="SDK\Serializers\**" />
-    <None Remove="SDK\Web\**" />
-  </ItemGroup>
-
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>False</Optimize>
+  </PropertyGroup>
 </Project>

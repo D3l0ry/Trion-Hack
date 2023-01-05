@@ -5,13 +5,13 @@ using static Trion.SDK.Interfaces.Client.Entity.Structures.BaseCombatWeapon;
 namespace Trion.Client.Configs
 {
     [Serializable]
-    internal struct CSkinChanger
+    internal class CSkinChanger
     {
         public bool SkinChangerActive;
     }
 
     [Serializable]
-    internal struct CSkinChangerWeapon
+    internal class CSkinChangerWeapon
     {
         public WeaponId WeaponID;
 

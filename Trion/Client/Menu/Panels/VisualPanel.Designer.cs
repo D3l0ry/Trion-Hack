@@ -49,24 +49,23 @@ namespace Trion.Client.Menu.Panels
 
             Size = new Size(598, 370);
             BackColor = Color.FromArgb(18, 21, 26);
-            Position.X = panelPosition.X + mainPosition.X;
-            Position.Y = panelPosition.Y + mainPosition.Y;
 
-            #region CheckBox Set
+            Point position = Position;
+            position.X = panelPosition.X + mainPosition.X;
+            position.Y = panelPosition.Y + mainPosition.Y;
+
+            Position = position;
+
             this["GlowEnable"] = GlowEnable;
             this["GlowHPEnable"] = GlowHPEnable;
             this["GlowFullBloomEnable"] = GlowFullBloomEnable;
-            #endregion
-
-            #region Separator Set
             this["GlowSeparator"] = new Separator()
             {
                 BackColor = Color.White,
                 Size = new Size(598, 0),
-                Position = new Point(0, 55),
+                Position = new Point(0, 60),
                 Visible = true
             };
-            #endregion
         }
     }
 }

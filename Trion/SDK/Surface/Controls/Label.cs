@@ -8,9 +8,13 @@ namespace Trion.SDK.Surface.Controls
     {
         public override void Show()
         {
-            Interface.Surface.GetTextSize(Font.Id, Text, out int Width, out int Height);
-            Size.Width = Width;
-            Size.Height = Height;
+            Interface.Surface.GetTextSize(Font.Id, Text, out int width, out int height);
+
+            Size newSize = Size;
+            newSize.Width = width;
+            newSize.Height = height;
+
+            Size = newSize;
 
             Interface.Surface.SetTextFont(Font.Id);
             Interface.Surface.SetTextColor(ForeColor);
@@ -21,6 +25,7 @@ namespace Trion.SDK.Surface.Controls
                 Interface.Surface.SetDrawColor(BackColor);
                 Interface.Surface.SetDrawFilledRect(Position.X, Position.Y, Position.X + Size.Width, Position.Y + Size.Height);
             }
+
             Interface.Surface.PrintText(Text);
         }
     }

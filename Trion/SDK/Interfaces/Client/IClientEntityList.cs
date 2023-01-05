@@ -8,29 +8,21 @@ namespace Trion.SDK.Interfaces.Client
 {
     internal unsafe class IClientEntityList : VMTable
     {
-        #region Initialization
-        public IClientEntityList(IntPtr Base) : base(Base)
-        {
-        }
-        #endregion
-
-        #region Delegates
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate IClientEntity* GetClientEntityDelegate(void* Class, int Index);
+        private delegate ref IClientEntity GetClientEntityDelegate(IntPtr Class, int Index);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate IClientEntity* GetClientEntityFromHandleDelegate(void* Class, void* Handle);
+        private delegate ref IClientEntity GetClientEntityFromHandleDelegate(IntPtr Class, IntPtr Handle);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate int GetHighestEntityIndexDelegate(void* Class);
-        #endregion
+        private delegate int GetHighestEntityIndexDelegate(IntPtr Class);
 
-        #region Methods
-        public IClientEntity* GetClientEntity(int Index) => CallVirtualFunction<GetClientEntityDelegate>(3)(this, Index);
+        public IClientEntityList(IntPtr Base) : base(Base) { }
 
-        public IClientEntity* GetClientEntityFromHandle(void* Handle) => CallVirtualFunction<GetClientEntityFromHandleDelegate>(4)(this, Handle);
+        public ref IClientEntity GetClientEntity(int Index) => ref CallVirtualFunction<GetClientEntityDelegate>(3)(this, Index);
+
+        public ref IClientEntity GetClientEntityFromHandle(IntPtr Handle) => ref CallVirtualFunction<GetClientEntityFromHandleDelegate>(4)(this, Handle);
 
         public int GetHighestEntityIndex => CallVirtualFunction<GetHighestEntityIndexDelegate>(6)(this);
-        #endregion
     }
 }

@@ -17,32 +17,25 @@ namespace Trion.SDK.Interfaces.Client
             public float Alpha;
 
             fixed byte pad[4];
-
-            float m_flSomeFloat;
-
-            float bloomAmount;
-
-            float m_flAnotherFloat;
+            readonly float m_flSomeFloat;
+            readonly float bloomAmount;
+            readonly float m_flAnotherFloat;
 
             public bool renderWhenOccluded;
 
             public bool renderWhenUnoccluded;
 
             public bool fullBloomRender;
-
-            byte pad1;
-
-            int fullBloomStencilTestValue;
+            readonly byte pad1;
+            readonly int fullBloomStencilTestValue;
 
             public int glowStyle;
-
-            int splitScreenSlot;
-
-            int nextFreeSlot;
+            readonly int splitScreenSlot;
+            readonly int nextFreeSlot;
         };
 
         [FieldOffset(0x0)]
-        private GlowObjectDefinition* GlowObjectDefinitions;
+        private readonly GlowObjectDefinition* GlowObjectDefinitions;
 
         [FieldOffset(0xC)]
         public int Size;
@@ -51,7 +44,7 @@ namespace Trion.SDK.Interfaces.Client
 
         public void SetColor(int index, bool isHealth = false, int health = 0)
         {
-            if(isHealth)
+            if (isHealth)
             {
                 float hp = health / 100f;
 
@@ -69,7 +62,9 @@ namespace Trion.SDK.Interfaces.Client
             GlowObjectDefinitions[index].Alpha = ConfigManager.CVisual.Alpha;
         }
 
-        public void SetRenderFlags(int index,bool occuluded, bool unocculuded)
+        public void SetBloom(int index, bool isBloom) => GlowObjectDefinitions[index].fullBloomRender = isBloom;
+
+        public void SetRenderFlags(int index, bool occuluded, bool unocculuded)
         {
             GlowObjectDefinitions[index].renderWhenOccluded = occuluded;
             GlowObjectDefinitions[index].renderWhenUnoccluded = unocculuded;

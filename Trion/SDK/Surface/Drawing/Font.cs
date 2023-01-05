@@ -24,21 +24,24 @@ namespace Trion.SDK.Surface.Drawing
             FONTFLAG_BITMAP = 0x800,
         };
 
-        public uint Id { get; set; }
-        public string Name { get; set; }
-        public uint Size { get; set; }
-        public FontFlags Style { get; set; }
+        public Font() : this("Tahoma", 29, FontFlags.FONTFLAG_NONE) { }
 
-        public Font():this("Tahoma",29, FontFlags.FONTFLAG_NONE) { }
-
-        public Font(string Name, uint Size, FontFlags Style)
+        public Font(string name, uint size, FontFlags style)
         {
-            this.Name = Name;
-            this.Size = Size;
-            this.Style = Style;
-
+            Name = name;
+            Size = size;
+            Style = style;
             Id = Interface.Surface.CreateFont();
-            Interface.Surface.SetFontGlyphSet(Id, Name, (int)Size, 0, 0, 0, Style);
+
+            Interface.Surface.SetFontGlyphSet(Id, name, (int)size, 0, 0, 0, style);
         }
+
+        public uint Id { get; set; }
+
+        public string Name { get; set; }
+
+        public uint Size { get; set; }
+
+        public FontFlags Style { get; set; }
     }
 }

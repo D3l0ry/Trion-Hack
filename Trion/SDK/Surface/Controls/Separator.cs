@@ -9,7 +9,6 @@ namespace Trion.SDK.Surface.Controls
         public override void Show()
         {
             Interface.Surface.SetDrawColor(BackColor);
-
             Interface.Surface.SetDrawOutlinedRect(Position.X, Position.Y, Position.X + Size.Width, Position.Y + 1);
         }
     }

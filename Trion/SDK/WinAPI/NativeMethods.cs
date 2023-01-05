@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
 
 using Trion.SDK.WinAPI.Enums;
 using Trion.SDK.WinAPI.Structures;
@@ -17,9 +16,6 @@ namespace Trion.SDK.WinAPI
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         public static extern bool VirtualProtect(IntPtr lpAddress, uint dwSize, ProtectCode flNewProtect, out uint lpflOldProtect);
 
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
-        public static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
-
         [DllImport("user32.dll")]
         public static extern short GetAsyncKeyState(KeyCode vKey);
 
@@ -28,9 +24,6 @@ namespace Trion.SDK.WinAPI
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr GetCurrentProcess();
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        public static extern uint GetPrivateProfileString(string lpAppName, string lpKeyName, string lpDefault, StringBuilder lpReturnedString, uint nSize, string lpFileName);
 
         [DllImport("psapi.dll", SetLastError = true)]
         public static extern bool GetModuleInformation(IntPtr hProcess, IntPtr hModule, out MODULEINFO lpmodinfo, long cb);

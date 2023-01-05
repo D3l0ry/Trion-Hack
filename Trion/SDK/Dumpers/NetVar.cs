@@ -1,27 +1,27 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-
 using Trion.SDK.Interfaces;
 using Trion.SDK.Interfaces.Client;
-using Trion.SDK.Interfaces.Client.Entity.Structures;
 
 namespace Trion.SDK.Dumpers
 {
     internal unsafe class NetVar
     {
-        #region Variables
-        private IBaseClientDLL.RecvTable*[] Tables { get; }
-        #endregion
+        private readonly IBaseClientDLL.RecvTable*[] mr_Tables;
 
-        #region Props
         public uint SequencePtr;
-        #endregion
 
-        #region Initializations
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void SetViewModelSequenceHookDelegate(ref IBaseClientDLL.RecvProxyData Data, void* Struct, void* Out);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void SetViewModelSequenceOriginalDelegate(ref IBaseClientDLL.RecvProxyData Data, void* Struct, void* Out);
+
         public NetVar()
         {
             int Length = 0;
-            var ClientClass = Interface.BaseClientDLL.GetAllClasses();
+            IBaseClientDLL.ClientClass* ClientClass = Interface.BaseClientDLL.GetAllClasses();
+
             if (ClientClass == null)
             {
                 return;
@@ -32,38 +32,27 @@ namespace Trion.SDK.Dumpers
                 Length++;
                 ClientClass = ClientClass->Next;
             }
-            Tables = new IBaseClientDLL.RecvTable*[Length];
+
+            mr_Tables = new IBaseClientDLL.RecvTable*[Length];
 
             Length = 0;
             ClientClass = Interface.BaseClientDLL.GetAllClasses();
             while (ClientClass != null)
             {
-                Tables[Length] = ClientClass->RecVTable;
+                mr_Tables[Length] = ClientClass->RecVTable;
 
                 Length++;
                 ClientClass = ClientClass->Next;
             }
         }
-        #endregion
 
-        #region Indexers
         public int this[string Table, string Prop] => GetProp(Table, Prop);
-        #endregion
 
-        #region Delegates
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void SetViewModelSequenceHookDelegate(ref IBaseClientDLL.RecvProxyData Data, void* Struct, void* Out);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void SetViewModelSequenceOriginalDelegate(ref IBaseClientDLL.RecvProxyData Data, void* Struct, void* Out);
-        #endregion
-
-        #region Public Methods
         public int GetOffset(string TableName, string PropName) => GetProp(TableName, PropName);
 
-        public void HookProp<T>(string TableName,string PropName, T Funct,ref uint OldPtr)
+        public void HookProp<T>(string TableName, string PropName, T Funct, ref uint OldPtr)
         {
-            IBaseClientDLL.RecvProp* Prop = (IBaseClientDLL.RecvProp*)0;
+            IBaseClientDLL.RecvProp* Prop = (IBaseClientDLL.RecvProp*)IntPtr.Zero;
             GetProp(TableName, PropName, &Prop);
 
             if (Prop == null)
@@ -74,17 +63,15 @@ namespace Trion.SDK.Dumpers
             OldPtr = (uint)Prop->proxy;
             Prop->proxy = Marshal.GetFunctionPointerForDelegate(Funct).ToPointer();
         }
-        #endregion
 
-        #region Private Methods
         private IBaseClientDLL.RecvTable* GetTable(string TableName)
         {
-            if (Tables.Length == 0)
+            if (mr_Tables.Length == 0)
             {
                 return (IBaseClientDLL.RecvTable*)IntPtr.Zero;
             }
 
-            foreach (var Table in Tables)
+            foreach (IBaseClientDLL.RecvTable* Table in mr_Tables)
             {
                 if (Table == null)
                 {
@@ -145,6 +132,5 @@ namespace Trion.SDK.Dumpers
 
             return ExtraOffset;
         }
-        #endregion
     }
 }

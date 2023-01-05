@@ -15,94 +15,67 @@ namespace Trion.Modules
 {
     internal unsafe struct Visual
     {
-        #region Variables
-        private static readonly Label WaterMarkLabel = new Label()
+        private static IGlowObjectManager* m_GlowObjectManager = Offsets.GlowObjectManager;
+
+        public static void GlowRender(ref BasePlayer localPlayer)
         {
-            ForeColor = Color.FromArgb(152, 241, 221),
-            Position = new Point(5, 5),
-            Font = new Font("Tahoma", 20, Font.FontFlags.FONTFLAG_OUTLINE),
-            Text = "Trion"
-        };
+            int myTeam = localPlayer.TeamNum;
 
-        private static IGlowObjectManager* IGlowObjectManager = Offsets.GlowObjectManager;
-        #endregion
-
-        #region Private
-        private static byte[] PrimeCode = { 0x74, 0xEB };
-        private static bool PrimeState = false;
-        #endregion
-
-        public static void GlowRender(BasePlayer* localPlayer)
-        {
-            int myTeam = localPlayer->TeamNum;
-
-            for (int index = 0; index < IGlowObjectManager->Size; index++)
+            for (int index = 0; index < m_GlowObjectManager->Size; index++)
             {
                 if (index == Interface.VEngineClient.GetLocalPlayer)
                 {
                     continue;
                 }
 
-                BasePlayer* entity = Interface.ClientEntityList.GetClientEntity(index)->GetPlayer;
+                ref BasePlayer entity = ref Interface.ClientEntityList.GetClientEntity(index).GetPlayer;
 
-                if (entity == null)
+                if (entity.IsNull)
                 {
                     continue;
                 }
 
-                if (myTeam == entity->TeamNum)
+                if (myTeam == entity.TeamNum)
                 {
                     continue;
                 }
 
-                IGlowObjectManager->SetEntity(index, entity);
-                IGlowObjectManager->SetColor(index, ConfigManager.CVisual.GlowHPEnable, entity->GetHealth);
-                IGlowObjectManager->SetRenderFlags(index, true, false);
+                fixed (void* entityPtr = &entity)
+                {
+                    m_GlowObjectManager->SetEntity(index, entityPtr);
+                }
+
+                m_GlowObjectManager->SetColor(index, ConfigManager.CVisual.GlowHPEnable, entity.GetHealth);
+                m_GlowObjectManager->SetBloom(index, ConfigManager.CVisual.GlowFullBloom);
+                m_GlowObjectManager->SetRenderFlags(index, true, false);
             }
         }
 
-        public static void RadarRender(BasePlayer* entity) => entity->Spotted = 1;
-
-        public static void RevealRanks(ref IClientMode.UserCmd cmd)
+        public static void RevealRanks(ref IClientMode.UserCmd userCmd)
         {
-            if ((cmd.buttons & IClientMode.Buttons.IN_SCORE) != 0)
+            if ((userCmd.buttons & IClientMode.Buttons.IN_SCORE) == 0)
             {
-                Interface.BaseClientDLL.DispatchUserMessage(50, 0, 0, (void*)0);
+                return;
             }
+
+            Interface.BaseClientDLL.DispatchUserMessage(50, 0, 0, (void*)0);
         }
 
         public static void NoFlash()
         {
-            var localPlayer = Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer;
+            ref BasePlayer localPlayer = ref Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer).GetPlayer;
 
-            if(localPlayer == null)
+            if (localPlayer.IsNull)
             {
                 return;
             }
 
-            if (!localPlayer->IsAlive)
+            if (!localPlayer.IsAlive)
             {
                 return;
             }
 
-            localPlayer->FlashMax = 0f;
+            localPlayer.FlashMax = 0f;
         }
-
-        public static void FakePrime()
-        {
-            if (ConfigManager.CVisual.Prime != PrimeState)
-            {
-                PrimeState = ConfigManager.CVisual.Prime;
-
-                if (NativeMethods.VirtualProtect((IntPtr)Offsets.FakePrime, 1, ProtectCode.PAGE_EXECUTE_READWRITE, out uint Old))
-                {
-                    *Offsets.FakePrime = ConfigManager.CVisual.Prime ? PrimeCode[1] : PrimeCode[0];
-
-                    NativeMethods.VirtualProtect((IntPtr)Offsets.FakePrime, 1, (ProtectCode)Old, out uint nullptr);
-                }
-            }
-        }
-
-        public static void WaterMark() => WaterMarkLabel.Show();
     }
 }

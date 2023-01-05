@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 using Trion.SDK.Interfaces;
 
@@ -7,65 +8,27 @@ namespace Trion.SDK.Surface.Controls
 {
     internal class Panel : Control
     {
-        #region Variables
-        public readonly List<Control> Controls = new List<Control>();
-        #endregion
+        private readonly List<Control> _Controls = new List<Control>();
 
-        #region Indexer
-        public Control this[int Index]
+        public Control this[string name]
         {
-            get => Controls[Index];
-            set => Controls.Add(value);
-        }
-
-        public Control this[string Name]
-        {
-            get
-            {
-                foreach (Control Control in Controls)
-                {
-                    if (Control.Name == Name)
-                    {
-                        return Control;
-                    }
-                }
-
-                return null;
-            }
+            get => _Controls.Where(X => X.Name == name).FirstOrDefault();
             set
             {
-                if (string.IsNullOrWhiteSpace(value.Name))
+                if (!string.IsNullOrWhiteSpace(value.Name))
                 {
-                    value.Name = Name;
+                    value.Name = name;
                 }
 
-                value.Position.X += Position.X;
-                value.Position.Y += Position.Y;
+                Point position = value.Position;
+                position.X += Position.X;
+                position.Y += Position.Y;
 
-                Controls.Add(value);
+                value.Position = position;
+
+                _Controls.Add(value);
             }
         }
-
-        public Control this[string Name, string Text]
-        {
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value.Name))
-                {
-                    value.Name = Name;
-                }
-                if (string.IsNullOrWhiteSpace(value.Text))
-                {
-                    value.Text = Text;
-                }
-
-                value.Position.X += Position.X;
-                value.Position.Y += Position.Y;
-
-                Controls.Add(value);
-            }
-        }
-        #endregion
 
         public override void Show()
         {
@@ -73,12 +36,14 @@ namespace Trion.SDK.Surface.Controls
 
             Interface.Surface.SetDrawFilledRect(Position.X, Position.Y, Position.X + Size.Width, Position.Y + Size.Height);
 
-            foreach (Control Element in Controls)
+            foreach (Control element in _Controls)
             {
-                if (Element.Visible)
+                if (!element.Visible)
                 {
-                    Element.Show();
+                    continue;
                 }
+
+                element.Show();
             }
         }
     }

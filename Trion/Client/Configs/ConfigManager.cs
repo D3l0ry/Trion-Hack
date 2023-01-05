@@ -1,18 +1,15 @@
-﻿using System.IO;
-using System.Xml.Serialization;
-
+﻿
 using Trion.SDK.Interfaces.Client.Entity.Structures;
 
 namespace Trion.Client.Configs
 {
     internal static class ConfigManager
     {
-        private static string ConfigPath<T>() => Path.Combine($@"C:\Config", $"{typeof(T).Name}.xml");
-
-        private static string ConfigPath(object ObjectSave) => Path.Combine($@"C:\Config", $@"{ObjectSave.GetType().Name}.xml");
-
         public static CVisual CVisual = new CVisual()
         {
+            WaterMark = true,
+            Prime = true,
+            RevealRanks = true,
             Alpha = 1f
         };
         public static CMisc CMisc = new CMisc();
@@ -49,7 +46,7 @@ namespace Trion.Client.Configs
 
             new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.GalilAr,12),
             new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Famas,919),
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Ak47,474,0,true,1),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Ak47,474,0,true),
             new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.M4A1,309),
             new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.M4a1_s,12),
             new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Ssg08,899),
@@ -59,71 +56,9 @@ namespace Trion.Client.Configs
             new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.G3SG1,12),
             new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Scar20,12),
 
-            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.Talon,522,0,false,0,null),
+            new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.M9Bayonet,619,0,false,0,null),
 
             new CSkinChangerWeapon(BaseCombatWeapon.WeaponId.GloveMotorcycle,10028,0,false,0,null),
         };
-
-        public static void SaveConfig()
-        {
-            object[] ObjectType =
-            {
-                CVisual,
-                CSkinChanger,
-                CSkinChangerWeapons
-            };
-
-            if (!Directory.Exists("Config"))
-            {
-                Directory.CreateDirectory("Config");
-            }
-
-            foreach (var ObjectSave in ObjectType)
-            {
-                using (FileStream FileStream = new FileStream(ConfigPath(ObjectSave), FileMode.Create, FileAccess.Write))
-                {
-                    new XmlSerializer(ObjectSave.GetType()).Serialize(FileStream, ObjectSave);
-                }
-            }
-        }
-
-        public static T LoadConfig<T>()
-        {
-        TryLoad:
-            try
-            {
-                using (FileStream FileStream = new FileStream(ConfigPath<T>(), FileMode.Open, FileAccess.Read))
-                {
-                    return (T)new XmlSerializer(typeof(T)).Deserialize(FileStream);
-                }
-            }
-            catch
-            {
-                object[] ObjectType =
-                {
-                    CVisual,
-                    CSkinChanger,
-                    CSkinChangerWeapons
-                };
-
-                if (!Directory.Exists("Config"))
-                {
-                    Directory.CreateDirectory("Config");
-                }
-
-                using (FileStream FileStream = new FileStream(ConfigPath<T>(), FileMode.Create, FileAccess.Write))
-                {
-                    foreach (var ObjectSave in ObjectType)
-                    {
-                        if (typeof(T).Name == ObjectSave.GetType().Name)
-                        {
-                            new XmlSerializer(typeof(T)).Serialize(FileStream, ObjectSave);
-                        }
-                    }
-                }
-
-                goto TryLoad;
-            }
-        }
     }
 }

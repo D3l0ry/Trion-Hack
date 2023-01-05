@@ -8,27 +8,23 @@ namespace Trion.Client.Menu
 {
     internal partial class Main
     {
-        #region Buttons
         private Button VisualButton;
         private Button ESPButton;
         private Button ChamsButton;
         private Button SkinButton;
         private Button MiscButton;
         private Button ProfileButton;
-        #endregion
 
         private void Initialization()
         {
             Interface.Surface.GetScreenSize(out int ScreenWidth, out int ScreenHeight);
 
-            #region Buttons
             VisualButton = new Button();
             ESPButton = new Button();
             ChamsButton = new Button();
             SkinButton = new Button();
             MiscButton = new Button();
             ProfileButton = new Button();
-            #endregion
 
             VisualButton.BackColor = Color.FromArgb(18, 21, 26);
             VisualButton.ForeColor = Color.FromArgb(152, 241, 221);
@@ -86,7 +82,6 @@ namespace Trion.Client.Menu
             this["SkinButton", "Skins"] = SkinButton;
             this["MiscButton", "Misc"] = MiscButton;
             this["ProfileButton", "Profile"] = ProfileButton;
-
             this["VisualPanel", true] = new VisualPanel(Position, new Point(202, 37))
             {
                  Visible = true

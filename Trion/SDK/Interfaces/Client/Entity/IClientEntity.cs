@@ -1,90 +1,63 @@
-﻿using System.Runtime.InteropServices;
-
-using Trion.SDK.Interfaces.Client.Entity.Structures;
-using Trion.SDK.VMT;
+﻿using Trion.SDK.Interfaces.Client.Entity.Structures;
+using Trion.SDK.VirtualMemory;
 
 namespace Trion.SDK.Interfaces.Client.Entity
 {
-    internal unsafe ref struct IClientEntity
+    internal unsafe struct IClientEntity
     {
-        #region Delegates
-        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate bool IsPlayerDelegate(void* Class);
-
-        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate bool IsWeaponDelegate(void* Class);
-        #endregion
-
-        #region Inheritance
-        public IClientNetworkable* GetClientNetworkable
+        public ref IClientNetworkable GetClientNetworkable
         {
             get
             {
                 fixed (void* Class = &this)
                 {
-                    return (IClientNetworkable*)((uint)Class + 8);
+                    return ref MemoryManager.Read<IClientNetworkable>(Class, 8);
                 }
             }
         }
-        #endregion
 
-        #region Virtual Methods
-        public bool IsPlayer
+        public ref BasePlayer GetPlayer
         {
             get
             {
                 fixed (void* Class = &this)
                 {
-                    return VMTable.CallVirtualFunction<IsPlayerDelegate>(Class, 157)(Class);
+                    return ref MemoryManager.Read<BasePlayer>(Class);
                 }
             }
         }
 
-        public bool IsWeapon
+        public ref BaseCombatWeapon GetWeapon
         {
             get
             {
                 fixed (void* Class = &this)
                 {
-                    return VMTable.CallVirtualFunction<IsWeaponDelegate>(Class, 165)(Class);
-                }
-            }
-        }
-        #endregion
-
-        #region Structures
-        public BasePlayer* GetPlayer
-        {
-            get
-            {
-                fixed(void* Class = &this)
-                {
-                    return (BasePlayer*)Class;
+                    return ref MemoryManager.Read<BaseCombatWeapon>(Class);
                 }
             }
         }
 
-        public BaseCombatWeapon* GetWeapon
+        public ref BaseViewModel GetViewModel
         {
             get
             {
                 fixed (void* Class = &this)
                 {
-                    return (BaseCombatWeapon*)Class;
+                    return ref MemoryManager.Read<BaseViewModel>(Class);
                 }
             }
         }
 
-        public BaseViewModel* GetViewModel
+        public bool IsNull
         {
             get
             {
-                fixed (void* Class = &this)
+                fixed (void* classPtr = &this)
                 {
-                    return (BaseViewModel*)Class;
+                    return classPtr == null;
                 }
             }
         }
-        #endregion
     }
 }

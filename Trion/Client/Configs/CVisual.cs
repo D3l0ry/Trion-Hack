@@ -1,7 +1,5 @@
 ﻿using System;
 
-using Trion.SDK.Interfaces.Client;
-
 namespace Trion.Client.Configs
 {
     [Serializable]
@@ -22,12 +20,12 @@ namespace Trion.Client.Configs
         #endregion
 
         #region Misc
-        public bool Prime = true;
+        public bool Prime;
         public bool Radar;
         public bool NoFlash;
         public bool WaterMark;
         public bool RevealRanks;
-        public float ViewModelFov = 25;
+        public float ViewModelFov = 30f;
         #endregion
     }
 }

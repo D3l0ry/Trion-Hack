@@ -6,15 +6,16 @@ using Trion.Client.Menu;
 using Trion.Modules;
 using Trion.SDK.Dumpers;
 using Trion.SDK.Interfaces.Client;
+using Trion.SDK.Interfaces.Client.Entity;
 using Trion.SDK.Interfaces.Client.Entity.Structures;
 using Trion.SDK.Interfaces.Engine;
 using Trion.SDK.Interfaces.Gui;
+using Trion.SDK.Structures;
 
 namespace Trion.SDK.Interfaces
 {
     internal unsafe struct Hooks
     {
-        #region Delegates
         public static IClientMode.CreateMoveHookDelegate CreateMoveDelegate = CreateMove;
         public static IClientMode.GetViewModelFovHookDelegate GetViewModelFovDelegate = GetViewModelFov;
         public static IClientMode.DoPostScreenEffectsHookDelegate DoPostScreenEffectsDelegate = DoPostScreenEffects;
@@ -23,69 +24,70 @@ namespace Trion.SDK.Interfaces
         public static IPanel.PaintTraverseHookDelegate PaintTraverseDelegate = PaintTraverse;
         public static ISurface.LockCursorHookDelegate LockCursorDelegate = LockCursor;
         public static NetVar.SetViewModelSequenceHookDelegate SetViewModelSequenceDelegate = SetViewModelSequence;
-        #endregion
-
         private static Main Main = new Main();
 
-        private static bool CreateMove(float Smt, ref IClientMode.UserCmd UserCmd)
+        private static bool CreateMove(float smt, ref IClientMode.UserCmd userCmd)
         {
-            if (UserCmd.IsNull)
+            if (userCmd.IsNull)
             {
-                return Interface.ClientMode.CreateMoveOriginal(Smt, ref UserCmd);
+                return Interface.ClientMode.CreateMoveOriginal(smt, ref userCmd);
             }
 
-            if (UserCmd.commandNumber == 0)
+            if (userCmd.commandNumber == 0)
             {
-                return Interface.ClientMode.CreateMoveOriginal(Smt, ref UserCmd);
+                return Interface.ClientMode.CreateMoveOriginal(smt, ref userCmd);
             }
 
-            BasePlayer* localPlayer = Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer;
+            ref BasePlayer localPlayer = ref Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer).GetPlayer;
 
-            if (localPlayer == null)
+            if (localPlayer.IsNull)
             {
                 return false;
             }
 
+            if ((userCmd.buttons & IClientMode.Buttons.IN_JUMP) != 0)
+            {
+                Misc.BunnyHop(ref userCmd, ref localPlayer);
+                Misc.AutoStrafe(ref userCmd, ref localPlayer);
+            }
+
             if (ConfigManager.CMisc.BunnyHop)
             {
-                Misc.BunnyHop(ref UserCmd, localPlayer);
+                Misc.BunnyHop(ref userCmd, ref localPlayer);
             }
 
             if (ConfigManager.CVisual.RevealRanks)
             {
-                Visual.RevealRanks(ref UserCmd);
+                Visual.RevealRanks(ref userCmd);
             }
 
             if (ConfigManager.CMisc.AutoStrafe)
             {
-                Misc.AutoStrafe(ref UserCmd, localPlayer);
+                Misc.AutoStrafe(ref userCmd, ref localPlayer);
             }
 
             if (ConfigManager.CMisc.MoonWalk)
             {
-                Misc.MoonWalk(ref UserCmd, localPlayer);
+                Misc.MoonWalk(ref userCmd, ref localPlayer);
             }
 
-            return false;
+            return true;
         }
 
-        private static float GetViewModelFov()
-        {
-            return Interface.ClientMode.GetViewModelFovOriginal() + ConfigManager.CVisual.ViewModelFov;
-        }
+        private static float GetViewModelFov() => Interface.ClientMode.GetViewModelFovOriginal() + ConfigManager.CVisual.ViewModelFov;
 
-        private static int DoPostScreenEffects(int Param)
+        private static int DoPostScreenEffects(int param)
         {
-            BasePlayer* localPlayer = Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer;
+            ref BasePlayer localPlayer = ref Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer).GetPlayer;
 
-            if (localPlayer == null)
+            if (localPlayer.IsNull)
             {
-                return Interface.ClientMode.DoPostScreenEffectsOriginal(Param);
+                return Interface.ClientMode.DoPostScreenEffectsOriginal(param);
             }
 
             if (ConfigManager.CVisual.GlowEnable)
             {
-                Visual.GlowRender(localPlayer);
+                Visual.GlowRender(ref localPlayer);
             }
 
             if (ConfigManager.CVisual.NoFlash)
@@ -93,63 +95,65 @@ namespace Trion.SDK.Interfaces
                 Visual.NoFlash();
             }
 
-            return Interface.ClientMode.DoPostScreenEffectsOriginal(Param);
+            return Interface.ClientMode.DoPostScreenEffectsOriginal(param);
         }
 
-        private static void FrameStageNotify(IBaseClientDLL.FrameStage FrameStage)
+        private static void FrameStageNotify(IBaseClientDLL.FrameStage frameStage)
         {
-            if (FrameStage == IBaseClientDLL.FrameStage.RENDER_START)
+            if (frameStage == IBaseClientDLL.FrameStage.NET_UPDATE_POSTDATAUPDATE_START)
             {
-                Visual.FakePrime();
-            }
+                ref BasePlayer localPlayer = ref Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer).GetPlayer;
 
-            if (FrameStage == IBaseClientDLL.FrameStage.NET_UPDATE_POSTDATAUPDATE_START)
-            {
-                BasePlayer* localPlayer = Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer;
-
-                if (localPlayer == null)
+                if (localPlayer.IsNull)
                 {
-                    Interface.BaseClientDLL.FrameStageNotifyOriginal(FrameStage);
+                    Interface.BaseClientDLL.FrameStageNotifyOriginal(frameStage);
 
                     return;
                 }
 
-                if (ConfigManager.CSkinChanger.SkinChangerActive)
-                {
-                    SkinChanger.OnFrameStage(FrameStage, localPlayer);
-                }
+                SkinChanger.OnFrameStage(ref localPlayer);
             }
 
-            Interface.BaseClientDLL.FrameStageNotifyOriginal(FrameStage);
+            Interface.BaseClientDLL.FrameStageNotifyOriginal(frameStage);
         }
 
-        private static bool FireEventClientSide(ref IGameEventManager.GameEvent Event)
+        private static bool FireEventClientSide(ref IGameEventManager.GameEvent gameEvent)
         {
-            if (Event.GetName() == "player_death")
+            if (gameEvent.GetName() == "player_death")
             {
-                SkinChanger.ApplyKillIcon(ref Event);
-                SkinChanger.ApplyStatTrack(ref Event);
-            }
+                int userId = gameEvent.GetInt("attacker");
+                Interface.VEngineClient.GetPlayerInfo(Interface.VEngineClient.GetLocalPlayer, out IVEngineClient.PlayerInfo playerInfo);
 
-            return Interface.GameEventManager.FireEventClientSideOriginal(ref Event);
-        }
-
-        private static void PaintTraverse(uint Panel, bool ForcePaint, bool AllowForce)
-        {
-            if (Interface.Panel.GetName(Panel) == "MatSystemTopPanel")
-            {
-                if (ConfigManager.CVisual.WaterMark)
+                if (userId != playerInfo.m_nUserID)
                 {
-                    Visual.WaterMark();
+                    return Interface.GameEventManager.FireEventClientSideOriginal(ref gameEvent);
                 }
 
+                ref BasePlayer localPlayer = ref Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer).GetPlayer;
+
+                if (!localPlayer.IsAlive)
+                {
+                    return Interface.GameEventManager.FireEventClientSideOriginal(ref gameEvent);
+                }
+
+                SkinChanger.ApplyKillIcon(ref gameEvent, ref localPlayer);
+                SkinChanger.ApplyStatTrack(ref gameEvent, ref localPlayer);
+            }
+
+            return Interface.GameEventManager.FireEventClientSideOriginal(ref gameEvent);
+        }
+
+        private static void PaintTraverse(uint panel, bool forcePaint, bool allowForce)
+        {
+            if (Interface.Panel.GetName(panel) == "MatSystemTopPanel")
+            {
                 Main.Show();
             }
 
-            Interface.Panel.PaintTraverseOriginal(Panel, ForcePaint, AllowForce);
+            Interface.Panel.PaintTraverseOriginal(panel, forcePaint, allowForce);
         }
 
-        private static void* LockCursor()
+        private static IntPtr LockCursor()
         {
             if (Main.Visible)
             {
@@ -161,26 +165,36 @@ namespace Trion.SDK.Interfaces
 
         private static void SetViewModelSequence(ref IBaseClientDLL.RecvProxyData data, void* Struct, void* Out)
         {
-            var LocalPlayer = Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer;
-            if (LocalPlayer == null || !LocalPlayer->IsAlive)
+            ref BasePlayer LocalPlayer = ref Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer).GetPlayer;
+
+            if (LocalPlayer.IsNull || !LocalPlayer.IsAlive)
             {
                 Marshal.GetDelegateForFunctionPointer<NetVar.SetViewModelSequenceOriginalDelegate>((IntPtr)Interface.NetVar.SequencePtr)(ref data, Struct, Out);
 
                 return;
             }
 
-            BaseViewModel* viewModel = (BaseViewModel*)(Struct);
+            BaseViewModel* viewModel = (BaseViewModel*)Struct;
 
             if (viewModel != null)
             {
-                var Owner = viewModel->GetOwner;
+                ref IClientEntity Owner = ref viewModel->GetOwner;
 
-                if (Owner != null && Owner == LocalPlayer)
+                if (!Owner.IsNull)
                 {
-                    string ModelName = Interface.ModelInfoClient.GetModelName(Interface.ModelInfoClient.GetModel(viewModel->ModelIndex));
-                    int Sequence = data.m_Value.m_Int;
+                    fixed (void* ownerPtr = &Owner)
+                    {
+                        fixed (void* playerPtr = &LocalPlayer)
+                        {
+                            if (ownerPtr == playerPtr)
+                            {
+                                string ModelName = Interface.ModelInfoClient.GetModelName(Interface.ModelInfoClient.GetModel(viewModel->ModelIndex));
+                                int Sequence = data.m_Value.m_Int;
 
-                    data.m_Value.m_Int = SkinChanger.GetSequence(ModelName, Sequence);
+                                data.m_Value.m_Int = SkinChanger.GetSequence(ModelName, Sequence);
+                            }
+                        }
+                    }
                 }
             }
 

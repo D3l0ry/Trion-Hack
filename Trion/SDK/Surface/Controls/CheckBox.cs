@@ -6,56 +6,43 @@ namespace Trion.SDK.Surface.Controls
 {
     internal sealed class CheckBox : Control
     {
-        #region Properties
         public bool Checked { get; set; }
-        #endregion
 
         public override void Show()
         {
-            Interface.Surface.GetTextSize(Font.Id, Text, out int Width, out int Height);
+            Interface.Surface.GetTextSize(Font.Id, Text, out int width, out int height);
 
-            #region Variables
-            int PositionX = Width + Position.X + 5;
+            int positionX = width + Position.X + 5;
+            int rectX2 = positionX + Size.Width;
+            int rectY2 = Position.Y + Size.Height;
+            int checkX1 = positionX + 1;
+            int checkY1 = Position.Y + 1;
+            int checkX2 = positionX + (Size.Width / 2);
+            int checkY2 = Position.Y + Size.Height - 1;
 
-            int RectX2 = PositionX + Size.Width;
-            int RectY2 = Position.Y + Size.Height;
-
-            int CheckX1 = PositionX + 1;
-            int CheckY1 = Position.Y + 1;
-            int CheckX2 = PositionX + (Size.Width / 2);
-            int CheckY2 = Position.Y + Size.Height - 1;
-
-            Color ActiveColor = Color.Red;
-            #endregion
+            Color activeColor = Color.Red;
 
             if (Checked)
             {
-                CheckX1 = PositionX + (Size.Width / 2);
-                CheckX2 = PositionX + Size.Width - 1;
+                checkX1 = positionX + (Size.Width / 2);
+                checkX2 = positionX + Size.Width - 1;
 
-                ActiveColor = Color.Green;
+                activeColor = Color.Green;
             }
 
-            #region Text
             Interface.Surface.SetTextFont(Font.Id);
             Interface.Surface.SetTextColor(ForeColor);
             Interface.Surface.SetTextPosition(Position.X, Position.Y + 1);
-
             Interface.Surface.PrintText(Text);
-            #endregion
 
-            #region CheckBox
             Interface.Surface.SetDrawColor(Color.White);
-            Interface.Surface.SetDrawOutlinedRect(PositionX - 1, Position.Y - 1, RectX2 + 1,RectY2 + 1);
-
+            Interface.Surface.SetDrawOutlinedRect(positionX - 1, Position.Y - 1, rectX2 + 1, rectY2 + 1);
             Interface.Surface.SetDrawColor(BackColor);
-            Interface.Surface.SetDrawFilledRect(PositionX, Position.Y, RectX2, RectY2);
+            Interface.Surface.SetDrawFilledRect(positionX, Position.Y, rectX2, rectY2);
+            Interface.Surface.SetDrawColor(activeColor);
+            Interface.Surface.SetDrawFilledRect(checkX1, checkY1, checkX2, checkY2);
 
-            Interface.Surface.SetDrawColor(ActiveColor);
-            Interface.Surface.SetDrawFilledRect(CheckX1, CheckY1, CheckX2, CheckY2);
-            #endregion
-
-            MouseEvent(PositionX,Position.Y,RectX2,RectY2);
+            MouseEvent(positionX, Position.Y, rectX2, rectY2);
         }
     }
 }

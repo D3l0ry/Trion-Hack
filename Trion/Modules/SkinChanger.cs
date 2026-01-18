@@ -3,24 +3,20 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 using Trion.Client.Configs;
+using Trion.SDK.Enums;
 using Trion.SDK.Interfaces;
-using Trion.SDK.Interfaces.Client;
 using Trion.SDK.Interfaces.Client.Entity;
 using Trion.SDK.Interfaces.Client.Entity.Structures;
 using Trion.SDK.Interfaces.Engine;
-using Trion.SDK.Structures.Modules;
-using static Trion.SDK.Interfaces.Client.Entity.Structures.BaseCombatWeapon;
+using Trion.SDK.Structures;
 
 namespace Trion.Modules
 {
-    internal unsafe struct SkinChanger
+    internal unsafe class SkinChanger
     {
-        #region Delegate
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void MakeGloveDelegate(int entry, int serial);
-        #endregion
 
-        #region Dictionary
         private static readonly Dictionary<WeaponId, string> KnifeModel = new Dictionary<WeaponId, string>()
         {
             [WeaponId.Bayonet] = "models/weapons/v_knife_bayonet.mdl",
@@ -86,9 +82,7 @@ namespace Trion.Modules
             [WeaponId.Talon] = "knife_widowmaker",
             [WeaponId.Ursus] = "knife_ursus"
         };
-        #endregion
 
-        #region Enums
         public enum AnimationSequence : int
         {
             SEQUENCE_DEFAULT_DRAW = 0,
@@ -123,22 +117,21 @@ namespace Trion.Modules
 
             SEQUENCE_BOWIE_IDLE1 = 1,
         };
-        #endregion
 
-        public static void OnFrameStage(IBaseClientDLL.FrameStage frameStage, BasePlayer* localPlayer)
+        public static void OnFrameStage(BasePlayer* localPlayer)
         {
             if (!localPlayer->IsAlive)
             {
                 return;
             }
 
-            Interface.VEngineClient.GetPlayerInfo(Interface.VEngineClient.GetLocalPlayer, out IVEngineClient.PlayerInfo PlayerInfo);
+            Interface.VEngineClient.GetPlayerInfo(Interface.VEngineClient.GetLocalPlayer, out PlayerInfo PlayerInfo);
 
             for (int Index = 0; Index < 8; Index++)
             {
                 BaseCombatWeapon* Weapon = localPlayer->GetMyWeapons(Index);
 
-                if (Weapon == null)
+                if (Weapon->IsNull)
                 {
                     continue;
                 }
@@ -155,15 +148,15 @@ namespace Trion.Modules
 
                 CSkinChangerWeapon WeaponId = ConfigManager.CSkinChangerWeapons[Weapon->ItemDefinitionIndex.GetWeaponId()];
 
-                ApplyWeapon(localPlayer, Weapon, WeaponId, PlayerInfo);
+                ApplyWeapon(Weapon, WeaponId, PlayerInfo);
             }
 
-            ApplyKnife(localPlayer, ref ConfigManager.CSkinChangerWeapons[35]);
+            //ApplyKnife(localPlayer, ref ConfigManager.CSkinChangerWeapons[35]);
 
-            ApplyWearable(localPlayer, ref ConfigManager.CSkinChangerWeapons[36], PlayerInfo);
+            //ApplyWearable(localPlayer, ref ConfigManager.CSkinChangerWeapons[36], PlayerInfo);
         }
 
-        private static void ApplyWeapon(BasePlayer* localPlayer, BaseCombatWeapon* weaponPtr, CSkinChangerWeapon configWeapon, IVEngineClient.PlayerInfo playerInfo)
+        private static void ApplyWeapon(BaseCombatWeapon* weaponPtr, CSkinChangerWeapon configWeapon, PlayerInfo playerInfo)
         {
             if (configWeapon.WeaponID == WeaponId.None)
             {
@@ -192,18 +185,18 @@ namespace Trion.Modules
             if (WeaponIndex.IsKnife() && WeaponIndex != configWeapon.WeaponID)
             {
                 weaponPtr->ItemDefinitionIndex = configWeapon.WeaponID;
-                ((BaseViewModel*)weaponPtr)->SetModelIndex(Interface.ModelInfoClient.GetModelIndex(KnifeModel[weaponPtr->ItemDefinitionIndex]));
+                weaponPtr->GetViewModel.SetModelIndex(Interface.ModelInfoClient.GetModelIndex(KnifeModel[weaponPtr->ItemDefinitionIndex]));
             }
         }
 
-        private static void ApplyKnife(BasePlayer* localPlayer,ref CSkinChangerWeapon configWeapon)
+        private static void ApplyKnife(BasePlayer* localPlayer, ref CSkinChangerWeapon configWeapon)
         {
             if (configWeapon.WeaponID == WeaponId.None)
             {
                 return;
             }
 
-            WeaponId ActiveIndex = localPlayer->GetActiveWeapon->ItemDefinitionIndex;
+            WeaponId ActiveIndex = localPlayer->GetActiveWeapon.ItemDefinitionIndex;
 
             if (ActiveIndex.IsKnife())
             {
@@ -211,7 +204,7 @@ namespace Trion.Modules
             }
         }
 
-        private static void ApplyWearable(BasePlayer* localPlayer,ref CSkinChangerWeapon configWeapon, IVEngineClient.PlayerInfo playerInfo)
+        private static void ApplyWearable(BasePlayer* localPlayer, ref CSkinChangerWeapon configWeapon, PlayerInfo playerInfo)
         {
             uint* wearables = localPlayer->GetMyWearables;
 
@@ -220,7 +213,7 @@ namespace Trion.Modules
                 return;
             }
 
-            IBaseClientDLL.ClientClass* Class = Interface.BaseClientDLL.GetAllClasses();
+            ClientClass* Class = Interface.BaseClientDLL.GetAllClasses();
 
             if (Class == null)
             {
@@ -235,11 +228,11 @@ namespace Trion.Modules
                 return;
             }
 
-            if (Interface.ClientEntityList.GetClientEntity((int)(wearables[0] & 0xFFF)) == null)
+            if (Interface.ClientEntityList.GetClientEntity((int)(wearables[0] & 0xFFF)).IsNull)
             {
                 while (Class != null)
                 {
-                    if (Class->ClassId == IBaseClientDLL.ClassId.CEconWearable)
+                    if (Class->ClassId == ClassId.CEconWearable)
                     {
                         break;
                     }
@@ -252,84 +245,68 @@ namespace Trion.Modules
                 wearables[0] = (uint)(entry | (serial << 16));
             }
 
-            BaseCombatWeapon* Glove = (BaseCombatWeapon*)Interface.ClientEntityList.GetClientEntityFromHandle((void*)wearables[0]);
-            if (Glove == null)
+            ref IClientEntity clientEntity = ref Interface.ClientEntityList.GetClientEntityFromHandle((IntPtr)wearables[0]);
+            BaseCombatWeapon* glove = clientEntity.GetWeapon;
+
+            if (glove->IsNull)
             {
                 return;
             }
 
-            if (Glove->ItemDefinitionIndex != configWeapon.WeaponID)
+            if (glove->ItemDefinitionIndex != configWeapon.WeaponID)
             {
-                Glove->ItemIdHigh = -1;
-                Glove->AccountId = playerInfo.m_nXuidLow;
+                glove->ItemIdHigh = -1;
+                glove->AccountId = playerInfo.m_nXuidLow;
 
-                Glove->ItemDefinitionIndex = configWeapon.WeaponID;
-                ((BaseViewModel*)Glove)->SetModelIndex(Interface.ModelInfoClient.GetModelIndex(GloveModel[Glove->ItemDefinitionIndex]));
+                glove->ItemDefinitionIndex = configWeapon.WeaponID;
+                BaseViewModel* viewModel = clientEntity.GetViewModel;
 
-                Glove->EntityQuality = QualityId.Normal;
-                Glove->FallBackPaintKit = configWeapon.SkinID;
+                viewModel->SetModelIndex(Interface.ModelInfoClient.GetModelIndex(GloveModel[glove->ItemDefinitionIndex]));
 
-                ((IClientEntity*)Glove)->GetClientNetworkable->PreDataUpdate(0);
+                glove->EntityQuality = QualityId.Normal;
+                glove->FallBackPaintKit = configWeapon.SkinID;
+
+                clientEntity.GetClientNetworkable->PreDataUpdate(0);
             }
         }
 
-        public static void ApplyKillIcon(ref IGameEventManager.GameEvent gameEvent)
+        public static void ApplyKillIcon(ref IGameEventManager.GameEvent gameEvent, BasePlayer* localPlayer)
         {
-            int UserId = gameEvent.GetInt("attacker");
-
-            if (UserId == 0)
-            {
-                return;
-            }
-
-            if (Interface.VEngineClient.GetPlayerForUserID(UserId) != Interface.VEngineClient.GetLocalPlayer)
-            {
-                return;
-            }
-
             string Weapon = gameEvent.GetString("weapon");
 
-            var WeaponIndex = Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer->GetActiveWeapon->ItemDefinitionIndex;
+            WeaponId WeaponIndex = localPlayer->GetActiveWeapon.ItemDefinitionIndex;
 
             if (WeaponIndex.IsKnife())
             {
-                foreach (var Icon in KillIcon(WeaponIndex))
+                foreach (KeyValuePair<string, string> Icon in KillIcon(WeaponIndex))
                 {
                     if (Weapon == Icon.Key)
                     {
                         gameEvent.SetString("weapon", Icon.Value);
+
                         break;
                     }
                 }
             }
         }
 
-        public static void ApplyStatTrack(ref IGameEventManager.GameEvent gameEvent)
+        public static void ApplyStatTrack(ref IGameEventManager.GameEvent gameEvent, BasePlayer* localPlayer)
         {
-            int UserId = gameEvent.GetInt("attacker");
+            ref BaseCombatWeapon WeaponIndex = ref localPlayer->GetActiveWeapon;
+            uint WeaponId = WeaponIndex.ItemDefinitionIndex.GetWeaponId();
 
-            if (UserId == 0)
+            fixed (void* weaponPtr = &WeaponIndex)
             {
-                return;
-            }
+                IClientNetworkable* ClientNetworkable = ((IClientEntity*)weaponPtr)->GetClientNetworkable;
 
-            if (Interface.VEngineClient.GetPlayerForUserID(UserId) != Interface.VEngineClient.GetLocalPlayer)
-            {
-                return;
-            }
+                ref CSkinChangerWeapon Weapon = ref ConfigManager.CSkinChangerWeapons[WeaponId];
 
-            BaseCombatWeapon* WeaponIndex = Interface.ClientEntityList.GetClientEntity(Interface.VEngineClient.GetLocalPlayer)->GetPlayer->GetActiveWeapon;
-            uint WeaponId = WeaponIndex->ItemDefinitionIndex.GetWeaponId();
-            IClientNetworkable* ClientNetworkable = ((IClientEntity*)WeaponIndex)->GetClientNetworkable;
+                if (Weapon.StatTrackEnable)
+                {
+                    WeaponIndex.FallBackStatTrack = ++Weapon.StatTrack;
 
-            ref CSkinChangerWeapon Weapon = ref ConfigManager.CSkinChangerWeapons[WeaponId];
-
-            if (Weapon.StatTrackEnable)
-            {
-                WeaponIndex->FallBackStatTrack = ++Weapon.StatTrack;
-
-                ClientNetworkable->PostDataUpdate(0);
-                ClientNetworkable->OnDataChanged(0);
+                    ClientNetworkable->PostDataUpdate(0);
+                }
             }
         }
 
@@ -340,11 +317,11 @@ namespace Trion.Modules
                 switch (sequence)
                 {
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_DRAW:
-                        return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_BUTTERFLY_DRAW, (int)AnimationSequence.SEQUENCE_BUTTERFLY_DRAW2);
+                    return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_BUTTERFLY_DRAW, (int)AnimationSequence.SEQUENCE_BUTTERFLY_DRAW2);
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                        return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_BUTTERFLY_LOOKAT01, (int)AnimationSequence.SEQUENCE_BUTTERFLY_LOOKAT03);
+                    return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_BUTTERFLY_LOOKAT01, (int)AnimationSequence.SEQUENCE_BUTTERFLY_LOOKAT03);
                     default:
-                        return sequence + 1;
+                    return sequence + 1;
                 }
             }
             else if (modelName == "models/weapons/v_knife_falchion_advanced.mdl")
@@ -352,16 +329,16 @@ namespace Trion.Modules
                 switch (sequence)
                 {
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_IDLE2:
-                        return (int)AnimationSequence.SEQUENCE_FALCHION_IDLE1;
+                    return (int)AnimationSequence.SEQUENCE_FALCHION_IDLE1;
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_HEAVY_MISS1:
-                        return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_FALCHION_HEAVY_MISS1, (int)AnimationSequence.SEQUENCE_FALCHION_HEAVY_MISS1_NOFLIP);
+                    return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_FALCHION_HEAVY_MISS1, (int)AnimationSequence.SEQUENCE_FALCHION_HEAVY_MISS1_NOFLIP);
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                        return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_FALCHION_LOOKAT01, (int)AnimationSequence.SEQUENCE_FALCHION_LOOKAT02);
+                    return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_FALCHION_LOOKAT01, (int)AnimationSequence.SEQUENCE_FALCHION_LOOKAT02);
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_DRAW:
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_IDLE1:
-                        return sequence;
+                    return sequence;
                     default:
-                        return sequence - 1;
+                    return sequence - 1;
 
                 }
             }
@@ -370,7 +347,7 @@ namespace Trion.Modules
                 switch (sequence)
                 {
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                        return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_CSS_LOOKAT01, (int)AnimationSequence.SEQUENCE_CSS_LOOKAT02);
+                    return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_CSS_LOOKAT01, (int)AnimationSequence.SEQUENCE_CSS_LOOKAT02);
                 }
             }
             else if (modelName == "models/weapons/v_knife_push.mdl")
@@ -378,21 +355,21 @@ namespace Trion.Modules
                 switch (sequence)
                 {
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_IDLE2:
-                        return (int)AnimationSequence.SEQUENCE_DAGGERS_IDLE1;
+                    return (int)AnimationSequence.SEQUENCE_DAGGERS_IDLE1;
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_LIGHT_MISS1:
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_LIGHT_MISS2:
-                        return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_DAGGERS_LIGHT_MISS1, (int)AnimationSequence.SEQUENCE_DAGGERS_LIGHT_MISS5);
+                    return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_DAGGERS_LIGHT_MISS1, (int)AnimationSequence.SEQUENCE_DAGGERS_LIGHT_MISS5);
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_HEAVY_MISS1:
-                        return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_DAGGERS_HEAVY_MISS2, (int)AnimationSequence.SEQUENCE_DAGGERS_HEAVY_MISS1);
+                    return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_DAGGERS_HEAVY_MISS2, (int)AnimationSequence.SEQUENCE_DAGGERS_HEAVY_MISS1);
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_HEAVY_HIT1:
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_HEAVY_BACKSTAB:
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                        return sequence + 3;
+                    return sequence + 3;
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_DRAW:
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_IDLE1:
-                        return sequence;
+                    return sequence;
                     default:
-                        return sequence + 2;
+                    return sequence + 2;
                 }
             }
             else if (modelName == "models/weapons/v_knife_survival_bowie.mdl")
@@ -401,11 +378,11 @@ namespace Trion.Modules
                 {
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_DRAW:
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_IDLE1:
-                        return sequence;
+                    return sequence;
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_IDLE2:
-                        return (int)AnimationSequence.SEQUENCE_BOWIE_IDLE1;
+                    return (int)AnimationSequence.SEQUENCE_BOWIE_IDLE1;
                     default:
-                        return sequence - 1;
+                    return sequence - 1;
                 }
             }
             else if (modelName == "models/weapons/v_knife_ursus.mdl" || modelName == "models/weapons/v_knife_cord.mdl" || modelName == "models/weapons/v_knife_canis.mdl" || modelName == "models/weapons/v_knife_outdoor.mdl" || modelName == "models/weapons/v_knife_skeleton.mdl")
@@ -413,11 +390,11 @@ namespace Trion.Modules
                 switch (sequence)
                 {
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_DRAW:
-                        return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_BUTTERFLY_DRAW, (int)AnimationSequence.SEQUENCE_BUTTERFLY_DRAW2);
+                    return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_BUTTERFLY_DRAW, (int)AnimationSequence.SEQUENCE_BUTTERFLY_DRAW2);
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                        return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_BUTTERFLY_LOOKAT01, 14);
+                    return Weapon.GetRandomInt((int)AnimationSequence.SEQUENCE_BUTTERFLY_LOOKAT01, 14);
                     default:
-                        return sequence + 1;
+                    return sequence + 1;
                 }
             }
             else if (modelName == "models/weapons/v_knife_stiletto.mdl")
@@ -425,7 +402,7 @@ namespace Trion.Modules
                 switch (sequence)
                 {
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                        return Weapon.GetRandomInt(12, 13);
+                    return Weapon.GetRandomInt(12, 13);
                 }
             }
             else if (modelName == "models/weapons/v_knife_widowmaker.mdl")
@@ -433,7 +410,7 @@ namespace Trion.Modules
                 switch (sequence)
                 {
                     case (int)AnimationSequence.SEQUENCE_DEFAULT_LOOKAT01:
-                        return Weapon.GetRandomInt(14, 15);
+                    return Weapon.GetRandomInt(14, 15);
                 }
             }
 
